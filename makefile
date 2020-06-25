@@ -66,7 +66,7 @@ install-daemon:
 install-overlay:
 	@echo -n "Installing overlay "
 	@install argonone.dtbo /boot/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
-	@bash .setup-overlay.sh
+	@bash setup-overlay.sh
 
 .PHONY: install-service
 install-service:

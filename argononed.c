@@ -47,7 +47,7 @@ SOFTWARE.
 #include "event_timer.h"
 #include "identapi.h"
 
-#define VERSION "0.1.5"
+#define VERSION "0.1.6"
 
 #define RUNNING_DIR "/tmp"
 #define LOG_FILE "/var/log/argononed.log"
@@ -262,7 +262,7 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
     }
 }
 
-int monitor_device()
+uint32_t monitor_device()
 {
 	struct gpioevent_request req;
 	int fd;
@@ -450,8 +450,14 @@ int main(int argc,char **argv)
     gpioSetMode(4, PI_INPUT);
     gpioSetPullUpDown(4, PI_PUD_DOWN);
     log_message("INFO","Now waitting for button press");
-    int count = monitor_device();
-    log_message("INFO", "Pulse received %dms", count);
+    uint32_t count = 0;
+    do
+    {
+        count = monitor_device();
+        log_message("INFO", "Pulse received %dms", count);
+        if ((count >= 19 && count <= 21) || (count >= 39 && count <= 41)) break;
+        else log_message ("ERROR", "Unrecognized pulse width received");
+    } while (1);
     cleanup();
     if (count >= 19 && count <= 21)
     {

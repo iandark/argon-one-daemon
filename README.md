@@ -21,5 +21,6 @@ Simply put I didn't like the OEM software.  It works sure but it uses Python and
 
 ## Ubuntu or systems where /boot is different  
 
-To install on a system like Ubuntu where /boot doesn't point to the boot partition. Run as **root** or ```make all && make BOOTLOC=/boot/firmware install```   
-*** The installer will look to the default /boot unless BOOTLOC is set *** 
+To install on a system like Ubuntu where /boot doesn't point to the boot partition.  
+Run as **root** or ```make all && sudo make BOOTLOC=/boot/firmware install```   
+***The installer will look to the default /boot unless BOOTLOC is set*** 

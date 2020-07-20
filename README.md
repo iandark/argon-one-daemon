@@ -18,3 +18,8 @@ The default values are the same as the OEM at 55℃ the fan will start at 10%, a
 ## Why make this?
 
 Simply put I didn't like the OEM software.  It works sure but it uses Python and needs to install a bunch of dependencies.  This makes it's foot print on your system much bigger than it needs to be.  My daemon runs with minimal requirements, all of them are included in this Repo.
+
+## Ubuntu or systems where /boot is different  
+
+To install on a system like Ubuntu where /boot doesn't point to the boot partition. Run as **root** or ```make all && make BOOTLOC=/boot/firmware install```   
+*** The installer will look to the default /boot unless BOOTLOC is set *** 

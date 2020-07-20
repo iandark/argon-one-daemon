@@ -6,7 +6,7 @@ SYSMODEL=$( awk '{ print $0 }' /proc/device-tree/model | sed 's|Raspberry Pi||;s
 echo -n "Search config.txt for overlay ... "
 grep -i '^dtoverlay=argonone' $FILE 1> /dev/null && { echo "FOUND"; exit 0; } || echo "NOT FOUND"
 cp $FILE $FILE.backup
-echo -n "Insert overlay into /boot/config.txt ... "
+echo -n "Insert overlay into ${FILE} ... "
 if [[ `grep -i "^\[pi${SYSMODEL}\]" $FILE` ]]
 then
     sed  -i "/^\[pi${SYSMODEL}\]/a dtoverlay=argonone" $FILE && echo "DONE";

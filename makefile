@@ -13,6 +13,10 @@ OVERLAY = argonone.dtbo
 GCCVER  = $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 10)
 USERID	= $(shell id -u)
 
+ifndef BOOTLOC
+BOOTLOC = /boot
+endif
+
 ifeq ($(GCCVER), 1)
 	CFLAGs  += -fanalyzer
 endif
@@ -65,8 +69,8 @@ install-daemon:
 .PHONY: install-overlay
 install-overlay:
 	@echo -n "Installing overlay "
-	@install argonone.dtbo /boot/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
-	@bash setup-overlay.sh
+	@install argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@bash setup-overlay.sh $(BOOTLOC)/config.txt
 
 .PHONY: install-service
 install-service:
@@ -80,7 +84,7 @@ install-service:
 	@echo -n "Enable Service "
 	@systemctl enable argononed 2>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Starting Service "
-	@systemctl start argononed 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@timeout 5s systemctl start argononed 2>/dev/null && echo "Successful" || { ( [ $$? -eq 124 ] && echo "Timeout" || echo "Failed" ) }
 
 .PHONY: install
 install: install-daemon install-service install-overlay
@@ -95,14 +99,14 @@ uninstall:
 	@echo -n "Erase Service ... "
 	@$(RM) /etc/systemd/system/argononed.service 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
 	@echo -n "Remove overlay ... "
-	@$(RM) /boot/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@$(RM) $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Erase argonone-shutdown ... "
 	@$(RM) /lib/systemd/system-shutdown/argonone-shutdown 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo -n "Remove daemon ... "
 	@$(RM) /usr/bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
-	@echo "Remove dtoverlay=argonone from /boot/config.txt"
-	@cp /boot/config.txt /boot/config.argoneone.backup
-	@sed -i '/dtoverlay=argonone/d' /boot/config.txt
+	@echo "Remove dtoverlay=argonone from $(BOOTLOC)/config.txt"
+	@cp $(BOOTLOC)/config.txt $(BOOTLOC)/config.argoneone.backup
+	@sed -i '/dtoverlay=argonone/d' $(BOOTLOC)/config.txt
 	@echo "Uninstall Complete"
 
 .PHONY: clean

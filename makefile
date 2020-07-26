@@ -5,10 +5,11 @@ CC      = gcc
 RM      = rm -v
 DTC     = dtc -@ -I dts -O dtb -o
 CFLAGS  = -Wall -s -O3
-LFLAGS  = -lpthread
+LFLAGS  = -lpthread -lrt
 OBJ     = argononed.o event_timer.o
 BINAME1 = argononed
 BINAME2 = argonone-shutdown
+BINAME3 = argonone-cli
 OVERLAY = argonone.dtbo
 GCCVER  = $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 10)
 USERID	= $(shell id -u)
@@ -31,7 +32,7 @@ endif
 
 %.o: %.c
 	@echo "Compile $<"
-	@$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BINAME1): $(OBJ)
 	@echo "Build $(BINAME1)"
@@ -40,6 +41,10 @@ $(BINAME1): $(OBJ)
 $(BINAME2): argonone-shutdown.c
 	@echo "Build $(BINAME2)"
 	$(CC) -o $(BINAME2) $^ $(CFLAGS)
+
+$(BINAME3): argonone-cli.c
+	@echo "Build $(BINAME3)"
+	$(CC) -o $(BINAME3) $^ $(CFLAGS) -lrt
 
 $(OVERLAY): argonone.dts
 	@echo "Build $@"
@@ -53,8 +58,12 @@ overlay: $(OVERLAY)
 daemon: $(BINAME1) $(BINAME2)
 	@echo "MAKE: Daemon"
 
+.PHONY: cli
+cli: $(BINAME3)
+	@echo "MAKE: CLI"
+
 .PHONY: all
-all: daemon overlay
+all: daemon cli overlay
 	@echo "Make: Complete"
 
 test:
@@ -65,6 +74,11 @@ test:
 install-daemon:
 	@echo -n "Installing daemon "
 	@install $(BINAME1) /usr/bin/$(BINAME1) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+
+.PHONY: install-cli
+install-cli:
+	@echo -n "Installing CLI "
+	@install -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 
 .PHONY: install-overlay
 install-overlay:
@@ -87,7 +101,7 @@ install-service:
 	@timeout 5s systemctl start argononed 2>/dev/null && echo "Successful" || { ( [ $$? -eq 124 ] && echo "Timeout" || echo "Failed" ) }
 
 .PHONY: install
-install: install-daemon install-service install-overlay
+install: install-daemon install-cli install-service install-overlay
 	@echo "Install Complete"
 
 .PHONY: uninstall

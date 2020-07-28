@@ -1,0 +1,2 @@
+#!/bin/bash
+complete -W " --cooldown --manual --fan --off --auto --fan1 --fan2 --fan3 --temp1 --temp2 --temp3 --hysteresis --commit --reload --decode --verbose --quiet --silent --help --usage " argonone-cli

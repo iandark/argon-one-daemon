@@ -66,10 +66,6 @@ cli: $(BINAME3)
 all: daemon cli overlay
 	@echo "Make: Complete"
 
-test:
-	@echo "Current user id : $(USERID)"
-
-
 .PHONY: install-daemon
 install-daemon:
 	@echo -n "Installing daemon "
@@ -79,6 +75,8 @@ install-daemon:
 install-cli:
 	@echo -n "Installing CLI "
 	@install -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@echo -n "Installing CLI autocomplete for bash "
+	@install -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 
 .PHONY: install-overlay
 install-overlay:

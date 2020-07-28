@@ -51,6 +51,9 @@ SOFTWARE.
 #include <argp.h>
 #include "argononed.h"
 
+
+char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
+
 const char *argp_program_version = "argonone-cli v0.1.0";
 const char *argp_program_bug_address =
 	"<gitlab.com/darkelvenangel/argononed.git>";
@@ -84,6 +87,7 @@ static struct argp_option options[] = {
   {"reload",   'r', 0,      OPTION_ALIAS},
   //{"load",     'l', "FILE", 0,  "Load New Schedule "},
   {0, 0, 0, 0, ">> Output Options <<" },
+  {"decode",   'd', 0,      0,  "Decode contents of Shared Memory"},
   {"verbose",  'v', 0,      0,  "Produce verbose output" },
   {"quiet",    'q', 0,      0,  "Don't produce any output" },
   {"silent",   's', 0,      OPTION_ALIAS },
@@ -165,6 +169,15 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
         break;
       }
       mode_switch = 1;
+      break;
+    case 'd':
+      if (mode_switch != -1)
+      {
+        fprintf (stderr,"ERROR:  Conflicting modes\n");
+        mode_switch = -2;
+        break;
+      }
+      mode_switch = 5;
       break;
     case 'f':
     {
@@ -316,7 +329,6 @@ int main (int argc, char** argv)
 
 
     } else {
-        printf("Fan Status %s Speed %d%%\n", ptr->fanspeed == 0x00 ? "OFF" : "ON", ptr->fanspeed);
         if (arguments.mode > -1 && arguments.mode < 4)
         {
             ptr->fanmode = arguments.mode;
@@ -332,6 +344,18 @@ int main (int argc, char** argv)
             ptr->fanspeed_Overide = 0;
 
             if (arguments.reload) kill(d_pid, 1); // Send update message
+        }
+        if (arguments.mode == 5)
+        {
+          printf(">> DECODEING MEMORY <<\n");
+          printf("Fan Status %s Speed %d%%\n", ptr->fanspeed == 0x00 ? "OFF" : "ON", ptr->fanspeed);
+          printf("System Temperature %d°\n", ptr->temperature);
+          printf("Hysteresis set to %d°\n",ptr->config.hysteresis);
+          printf("Fan Speeds set to %d%% %d%% %d%%\n",ptr->config.fanstages[0],ptr->config.fanstages[1],ptr->config.fanstages[2]);
+          printf("Fan Temps set to %d° %d° %d°\n",ptr->config.thresholds[0],ptr->config.thresholds[1],ptr->config.thresholds[2]);
+          printf("Fan Mode [ %s ] \n", RUN_STATE_STR[ptr->fanmode]);
+          printf("Fan Speed Override %d%% \n", ptr->fanspeed_Overide);
+          printf("Target Temperature %d° \n", ptr->temperature_target);
         }
     }
     close(shm_fd);

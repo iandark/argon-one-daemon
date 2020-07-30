@@ -13,6 +13,7 @@ BINAME3 = argonone-cli
 OVERLAY = argonone.dtbo
 GCCVER  = $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 10)
 USERID	= $(shell id -u)
+LOGLEVEL = 6
 
 ifndef BOOTLOC
 BOOTLOC = /boot
@@ -32,7 +33,7 @@ endif
 
 %.o: %.c
 	@echo "Compile $<"
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) 
 
 $(BINAME1): $(OBJ)
 	@echo "Build $(BINAME1)"
@@ -126,3 +127,5 @@ clean:
 	-@$(RM) *.o 2>/dev/null || true
 	-@$(RM) argonone.dtbo 2>/dev/null || true
 	-@$(RM) $(BINAME) 2>/dev/null || true
+	-@$(RM) $(BINAME1) 2>/dev/null || true
+	-@$(RM) $(BINAME2) 2>/dev/null || true

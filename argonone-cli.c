@@ -54,7 +54,7 @@ SOFTWARE.
 
 char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
 
-const char *argp_program_version = "argonone-cli v0.1.0";
+const char *argp_program_version = "argonone-cli version 0.1.0";
 const char *argp_program_bug_address =
 	"<gitlab.com/darkelvenangel/argononed.git>";
 
@@ -75,12 +75,12 @@ static struct argp_option options[] = {
   {"off",      'o', 0,      0,  "Turn temperature monitoring off"},
   {"auto",     'a', 0,      0,  "Set to Automatic Mode"},
   {0, 0, 0, 0,  ">> Schedule Operations <<"},
-  {"fan1", 3, "VALUE",0, "Set Fan1 value"},
-  {"fan2", 4, "VALUE",0, "Set Fan2 value"},
-  {"fan3", 5, "VALUE",0, "Set Fan3 value"},
-  {"temp1", 6, "VALUE",0, "Set Temperature1 value"},
-  {"temp2", 7, "VALUE",0, "Set Temperature2 value"},
-  {"temp3", 8, "VALUE",0, "Set Temperature3 value"},
+  {"fan0", 3, "VALUE",0, "Set Fan1 value"},
+  {"fan1", 4, "VALUE",0, "Set Fan2 value"},
+  {"fan2", 5, "VALUE",0, "Set Fan3 value"},
+  {"temp0", 6, "VALUE",0, "Set Temperature1 value"},
+  {"temp1", 7, "VALUE",0, "Set Temperature2 value"},
+  {"temp2", 8, "VALUE",0, "Set Temperature3 value"},
   {"hysteresis", 9, "VALUE",0,  "Set Hysteresis"},
   {0, 0, 0, 0, ""},
   {"commit",    1,  0,      0,  "Commit changes"},
@@ -120,7 +120,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     case 'v':
       arguments->verbose = 1;
       break;
-    case 'r':
+    case 'r': case 1:
       arguments->reload = 1;
     case ARGP_KEY_ARG:
       if (state->arg_num >= 1)

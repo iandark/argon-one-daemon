@@ -160,18 +160,40 @@ void Read_config()
     }
 }
 
-// TODO:
-// - Fix this function it's unsafe!
-// MESSY!
 char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
 void reload_config_from_shm()
 {
-    // This is **VERY** Bad don't let this get into production
-    #warning "WARNING: function reload_config_from_shm() is not safe please revise."
+    for (int i = 0; i < 3; i++)
+    {
+        int lastval = 30;
+        if (ptr->config.thresholds[i] < lastval)
+        {
+            log_message(LOG_WARN,"Shared Memory contains bad value at threshold %d ABORTING reload", i);
+            return;
+        }
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        if (ptr->config.fanstages[i] > 100 )
+        {
+            log_message(LOG_WARN,"Shared Memory contains bad value at fanstage %d ABORTING reload", i);
+            return;
+        }
+    }
     memcpy(&fanstage, ptr->config.fanstages, sizeof(fanstage));
     memcpy(&threshold, ptr->config.thresholds, sizeof(threshold));
-    hysteresis = ptr->config.hysteresis % 11;
-    runstate = ptr->fanmode % 4;
+    if (ptr->config.hysteresis > 10)
+    {
+        log_message(LOG_WARN,"Shared Memory contains bad value at hysteresis FORCING to 10");
+        ptr->config.hysteresis = 10;
+    }
+    hysteresis = ptr->config.hysteresis;
+    if (ptr->fanmode > 3) 
+    {
+        log_message(LOG_WARN,"Shared Memory contains bad value at fanmode FORCING to AUTO");
+        ptr->fanmode = 0;
+    }
+    runstate = ptr->fanmode;
     threshold[3] = ptr->temperature_target >= 30 ? ptr->temperature_target : 30;
     fanstage[3]  = ptr->fanspeed_Overide <= 100 ? ptr->fanspeed_Overide : 0;
     log_message(LOG_INFO,"Hysteresis set to %d",hysteresis);
@@ -179,8 +201,7 @@ void reload_config_from_shm()
     log_message(LOG_INFO,"Fan Temps set to %d %d %d",threshold[0],threshold[1],threshold[2]);
     log_message(LOG_INFO,"Fan Mode [ %s ] ", RUN_STATE_STR[runstate]);
     log_message(LOG_INFO,"Fan Speed Override %3d ", fanstage[3]);
-    log_message(LOG_INFO,"Target Temperature %d ", threshold[3]);
-    
+    log_message(LOG_INFO,"Target Temperature %d ", threshold[3]);   
 }
 
 void Set_FanSpeed(uint8_t fan_speed)
@@ -444,7 +465,7 @@ int main(int argc,char **argv)
 {
     // check for unclean exit
     if (getuid() != 0) {
-        fprintf(stderr, "ERROR: Permissions error, must be run as root");
+        fprintf(stderr, "ERROR: Permissions error, must be run as root\n");
         exit(1);
     }
     if (access(LOCK_FILE, F_OK) != -1)

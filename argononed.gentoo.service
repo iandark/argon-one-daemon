@@ -1,0 +1,12 @@
+#!/sbin/openrc-run
+command=/usr/bin/argononed
+command_args=""
+pidfile=/run/argononed.pid
+description="Argon One Fan and Button Daemon Service"
+
+depend() {
+        need localmount
+        after modules
+        after rpi3-config-mv
+        need i2c
+}

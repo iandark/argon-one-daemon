@@ -1,10 +1,10 @@
 # Argon One Daemon
 
-A replacement daemon for the Argon One Raspberry Pi case.
+A replacement daemon for the Argon One Raspberry Pi case.  This will also now support the Argon Artik Fan Hat
 
 ## How To Install
 
-I've tried to make the installer as simple as possible. After cloning this repo simply run ```make all && sudo make install``` and that's it your argonone case is now up and running!
+I've tried to make the installer as simple as possible. After cloning this repo simply run ```./configure && make all && sudo make install``` You may need to reboot for full functionality.
 
 ## Configuration
 
@@ -19,17 +19,30 @@ The default values are the same as the OEM at 55℃ the fan will start at 10%, a
 
 Simply put I didn't like the OEM software.  It works sure but it uses Python and needs to install a bunch of dependencies.  This makes it's foot print on your system much bigger than it needs to be.  My daemon runs with minimal requirements, all of them are included in this Repo.
 
-## Ubuntu or systems where /boot is different  
+## OS Support
 
-To install on a system like Ubuntu where /boot doesn't point to the boot partition.  
-Run as **root** or ```make all && sudo make BOOTLOC=/boot/firmware install```   
-***The installer will look to the default /boot unless BOOTLOC is set*** 
+The installer now requires you to run ```./configure``` before you run make. This will set up the installer so that it should be able to install on multiple OS's.  The current list of supported OS's are  
+* Raspberry Pi OS 32bit *(64bit is untested but should work as well)*    
+* Gentoo *(Testing)*  
+* Manjaro *(Testing)*  
+* Ubuntu *(Untested)*  
+If your OS isn't on this list it means that the installer isn't setup for your OS and it may or may not be able to install on your system. 
 
 ## Logging Options
 
 The default build will generate a very detailed logs if you want less logging then add  
 ```make LOGLEVEL=[0-6]```  
 The log levels go in this order: FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG. A value of 0 disables logging.
+
+## Upgrading to the latest version
+
+In order to upgrade to the latest version the current method is to pull the updates from gitlab and execute the following commands
+```
+make mrproper
+./configure
+make
+sudo make install-daemon install-cli
+```
 
 # The Argon One CLI tool  
 

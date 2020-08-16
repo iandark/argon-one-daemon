@@ -15,12 +15,42 @@ GCCVER  = $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 10)
 USERID	= $(shell id -u)
 LOGLEVEL = 6
 
+-include makefile.conf
 ifndef BOOTLOC
 BOOTLOC = /boot
+endif
+ifndef INITSYS
+INITSYS = SYSTEMD
+endif
+ifndef I2CHELPER
+I2CHELPER = 0
 endif
 
 ifeq ($(GCCVER), 1)
 	CFLAGs  += -fanalyzer
+endif
+
+ifeq ($(INITSYS), SYSTEMD)
+	SERVICE_FILE=argononed.service
+	SERVICE_FILE_PERMISSIONS=644
+	SERVICE_PATH=/etc/systemd/system/argononed.service
+	SHUTDOWN_FILE=$(BINAME2)
+	SHUTDOWN_PATH=/lib/systemd/system-shutdown/argonone-shutdown
+	SERVICE_ENABLE=systemctl enable
+	SERVICE_DISABLE=systemctl disable
+	SERVICE_START=systemctl start argononed
+	SERVICE_STOP=systemctl stop argononed
+endif
+ifeq ($(INITSYS), OPENRC)
+	SERVICE_FILE=argononed.gentoo.service
+	SERVICE_FILE_PERMISSIONS=744
+	SERVICE_PATH=/etc/initd/argononed
+	SHUTDOWN_FILE=argononed.stop
+	SHUTDOWN_PATH=/etc/local.d/argononed.stop
+	SERVICE_ENABLE=rc-update add
+	SERVICE_DISABLE=rc-update del
+	SERVICE_START=/etc/init.d/argononed start
+	SERVICE_STOP=/etc/init.d/argononed stop
 endif
 
 ifeq (install,$(findstring install, $(MAKECMDGOALS)))
@@ -84,20 +114,40 @@ install-overlay:
 	@echo -n "Installing overlay "
 	@install argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
 	@bash setup-overlay.sh $(BOOTLOC)/config.txt
+ifeq ($(I2CHELPER), 1)
+	@echo "Checking /etc/modules-load.d/raspberrypi.conf"
+	@echo -e "i2c-dev\ni2c-bcm2708" >> /etc/modules-load.d/raspberrypi.conf
+endif	
 
 .PHONY: install-service
 install-service:
 	@echo "Installing services "
 	@echo -n "argononed.service ... "
-	@install -m 644 argononed.service /etc/systemd/system/argononed.service 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+#	@install -m 644 argononed.service /etc/systemd/system/argononed.service 2>/dev/null && echo "Successful" || { echo "Failed"; true; } 
+	@install -m $(SERVICE_FILE_PERMISSIONS) $(SERVICE_FILE) $(SERVICE_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; } 
+ifeq ($(INITSYS), OPENRC)
+	@echo -n "shutdown-argonone ... "
+	@install $(BINAME2) /usr/bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@echo -n "shutdown service ... "
+	@install -m 744 $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+endif
+ifeq ($(INITSYS), SYSTEMD)
 	@echo -n "argonone-shutdown ... "
-	@install argonone-shutdown /lib/systemd/system-shutdown/argonone-shutdown 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+#	@install argonone-shutdown /lib/systemd/system-shutdown/argonone-shutdown 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@install $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo "Refresh services list"
 	@systemctl daemon-reload
+endif
 	@echo -n "Enable Service "
-	@systemctl enable argononed 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@$(SERVICE_ENABLE) argononed &>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Starting Service "
-	@timeout 5s systemctl start argononed 2>/dev/null && echo "Successful" || { ( [ $$? -eq 124 ] && echo "Timeout" || echo "Failed" ) }
+	@timeout 5s $(SERVICE_START) &>/dev/null && echo "Successful" || { ( [ $$? -eq 124 ] && echo "Timeout" || echo "Failed" ) }
+ifeq ($(DISTRO), manjaro-arm)
+	@echo -e "IMPORTANT!!!!\n********************************\nYou must check /etc/modules-load.d/raspberrypi.conf contains these two lines\ni2c-dev\ni2c-bcm2708"
+endif
+ifeq ($(DISTRO), gentoo)
+	@echo -e "IMPORTANT!!!!\n********************************\nPlease ensure your config.txt containes\ndtparam=i2c_arm=on"
+endif
 
 .PHONY: install
 install: install-daemon install-cli install-service install-overlay
@@ -106,17 +156,28 @@ install: install-daemon install-cli install-service install-overlay
 .PHONY: uninstall
 uninstall:
 	@echo -n "Stop Service ... "
-	@systemctl stop argononed 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@$(SERVICE_STOP) &>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Disable Service ... "
-	@systemctl disable argononed 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@$(SERVICE_DISABLE) &>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Erase Service ... "
-	@$(RM) /etc/systemd/system/argononed.service 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
+	@$(RM) $(SERVICE_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+ifeq ($(INITSYS), OPENRC)
+	@echo -n "Erase Shutdown Service ... "
+	@$(RM) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@echo -n "Erase argonone-shutdown ... "
+	@$(RM) /usr/bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+else
+	@echo -n "Erase argonone-shutdown ... "
+	@$(RM) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+endif
 	@echo -n "Remove overlay ... "
 	@$(RM) $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
-	@echo -n "Erase argonone-shutdown ... "
-	@$(RM) /lib/systemd/system-shutdown/argonone-shutdown 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo -n "Remove daemon ... "
 	@$(RM) /usr/bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
+	@echo -n "Remove cli-tool ... "
+	@$(RM) /usr/bin/argonone-cli 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
+	@echo -n "Remove autocomplete for cli ... "
+	$(RM) /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo "Remove dtoverlay=argonone from $(BOOTLOC)/config.txt"
 	@cp $(BOOTLOC)/config.txt $(BOOTLOC)/config.argoneone.backup
 	@sed -i '/dtoverlay=argonone/d' $(BOOTLOC)/config.txt
@@ -129,3 +190,7 @@ clean:
 	-@$(RM) $(BINAME) 2>/dev/null || true
 	-@$(RM) $(BINAME1) 2>/dev/null || true
 	-@$(RM) $(BINAME2) 2>/dev/null || true
+
+.PHONY: mrproper
+mrproper: clean
+	-@$(RM) makefile.conf 2>/dev/null || true

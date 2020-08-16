@@ -3,3 +3,4 @@ argonone.dtbo
 *.o
 argonone-shutdown
 argonone-cli
+makefile.conf

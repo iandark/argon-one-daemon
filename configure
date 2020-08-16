@@ -54,13 +54,13 @@ esac
 
 echo "SYSTEM CHECK"
 echo -n "gcc : "
-whereis gcc > /dev/null && GCC=1 || GCC=0
+command -v gcc &> /dev/null && GCC=1 || GCC=0
 [[ $GCC == 1 ]] && echo "OK" || echo "ERR"
 echo -n "dtc : "
-whereis dtc > /dev/null && DTC=1 || DTC=0
+command -v dtc &> /dev/null && DTC=1 || DTC=0
 [[ $DTC == 1 ]] && echo "OK" || echo "ERR"
 echo -n "make : "
-whereis make > /dev/null && MAKE=1 || MAKE=0
+command -v make &> /dev/null && MAKE=1 || MAKE=0
 [[ $MAKE == 1 ]] && echo "OK" || echo "ERR"
 
 if [[ $GCC -eq 1 && $DTC -eq 1 && $MAKE -eq 1 ]]

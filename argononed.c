@@ -48,7 +48,7 @@ SOFTWARE.
 #include "identapi.h"
 #include "argononed.h"
 
-#define VERSION "0.2.0 experimental"
+#define VERSION "0.2.1"
 #ifndef LOG_LEVEL
 #define LOG_LEVEL 6
 #endif
@@ -207,7 +207,7 @@ void reload_config_from_shm()
 void Set_FanSpeed(uint8_t fan_speed)
 {
     static int file_i2c = 0;
-    static uint8_t speed = 0;
+    static uint8_t speed = 1;
 	if (file_i2c == 0)
     {
         char *filename = (char*)"/dev/i2c-1";
@@ -510,7 +510,6 @@ int main(int argc,char **argv)
    }
     daemonize();
     initialize_timers();
-    Set_FanSpeed(0);
     log_message(LOG_INFO,"Now running as a daemon");
     size_t timer1 __attribute__((unused)) = start_timer_long(2, TMR_Get_temp,TIMER_PERIODIC,NULL);
     log_message(LOG_INFO, "Begin Initalizing shared memory");
@@ -521,6 +520,7 @@ int main(int argc,char **argv)
 		log_message(LOG_FATAL, "Shared memory map error");
 		return 1;
 	}
+    Set_FanSpeed(0);
     memcpy(ptr->config.fanstages, &fanstage, sizeof(fanstage));
     memcpy(ptr->config.thresholds, &threshold, sizeof(threshold));
     ptr->config.hysteresis = hysteresis;

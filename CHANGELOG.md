@@ -1,3 +1,8 @@
+0.2.1
+* PATCH for Argon Artik Fan hat
+* Added OS support for Gentoo and Manjaro
+* Change Build Procedure for new OS support
+
 0.2.0
 * Added shared memory interface
 * Changed Logging system

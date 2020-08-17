@@ -512,7 +512,7 @@ int main(int argc,char **argv)
     initialize_timers();
     log_message(LOG_INFO,"Now running as a daemon");
     size_t timer1 __attribute__((unused)) = start_timer_long(2, TMR_Get_temp,TIMER_PERIODIC,NULL);
-    log_message(LOG_INFO, "Begin Initalizing shared memory");
+    log_message(LOG_INFO, "Begin Initalising shared memory");
 	int shm_fd =  shm_open(SHM_FILE, O_CREAT | O_RDWR, 0666);
 	ftruncate(shm_fd, SHM_SIZE);
     ptr = mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
@@ -526,7 +526,7 @@ int main(int argc,char **argv)
     ptr->config.hysteresis = hysteresis;
     gpioSetMode(4, PI_INPUT);
     gpioSetPullUpDown(4, PI_PUD_DOWN);
-    log_message(LOG_INFO,"Now waitting for button press");
+    log_message(LOG_INFO,"Now waiting for button press");
     uint32_t count = 0;
     do
     {

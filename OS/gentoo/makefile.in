@@ -1,0 +1,10 @@
+SERVICE_FILE=OS/gentoo/argononed
+SERVICE_FILE_PERMISSIONS=744
+SERVICE_PATH=/etc/initd/argononed
+SHUTDOWN_FILE=OS/gentoo/argononed.stop
+SHUTDOWN_PATH=/etc/local.d/argononed.stop
+SERVICE_ENABLE=rc-updateadd
+SERVICE_DISABLE=rc-updatedel
+SERVICE_START=/etc/init.d/argononedstart
+SERVICE_STOP=/etc/init.d/argononedstop
+

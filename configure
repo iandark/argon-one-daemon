@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+[[ -a makefile.conf ]] && { echo "ERROR:  makefile.conf already exists. run make mrproper first!"; exit 1;}
+
 DISTRO=$(awk -F"=" '$1=="ID"{print $2}' /etc/os-release)
 
 I2CHELPER=0
@@ -62,7 +64,8 @@ command -v dtc &> /dev/null && DTC=1 || DTC=0
 echo -n "make : "
 command -v make &> /dev/null && MAKE=1 || MAKE=0
 [[ $MAKE == 1 ]] && echo "OK" || echo "ERR"
-
+echo -n "bash-autocomplete : "
+[[ -d /etc/bash_completion.d ]] && { AUTOC=1 ; echo "OK";} || { AUTOC=0 ; echo "NOT INSTALLED";}
 if [[ $GCC -eq 1 && $DTC -eq 1 && $MAKE -eq 1 ]]
 then
     echo "Dependency Check Successful" 
@@ -76,5 +79,5 @@ echo "DISTRO=${DISTRO}" >> makefile.conf
 echo "BOOTLOC=${BOOTLOC}" >> makefile.conf
 echo "INITSYS=${INITSYS}" >> makefile.conf
 echo "I2CHELPER=${I2CHELPER}" >> makefile.conf
-
+echo "AUTOCOMP=${AUTOC}" >> makefile.conf
 exit 0

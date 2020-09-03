@@ -4,6 +4,8 @@
 CC      = gcc
 RM      = rm -v
 DTC     = dtc -@ -I dts -O dtb -o
+BASH	= bash
+INSTALL = install
 CFLAGS  = -Wall -s -O3
 LFLAGS  = -lpthread -lrt
 OBJ     = argononed.o event_timer.o
@@ -25,6 +27,9 @@ endif
 ifndef I2CHELPER
 I2CHELPER = 0
 endif
+ifndef AUTOCOMP
+AUTOCOMP = 0
+endif
 
 ifeq ($(GCCVER), 1)
 	CFLAGs  += -fanalyzer
@@ -41,17 +46,7 @@ ifeq ($(INITSYS), SYSTEMD)
 	SERVICE_START=systemctl start argononed
 	SERVICE_STOP=systemctl stop argononed
 endif
-ifeq ($(INITSYS), OPENRC)
-	SERVICE_FILE=argononed.gentoo.service
-	SERVICE_FILE_PERMISSIONS=744
-	SERVICE_PATH=/etc/initd/argononed
-	SHUTDOWN_FILE=argononed.stop
-	SHUTDOWN_PATH=/etc/local.d/argononed.stop
-	SERVICE_ENABLE=rc-update add
-	SERVICE_DISABLE=rc-update del
-	SERVICE_START=/etc/init.d/argononed start
-	SERVICE_STOP=/etc/init.d/argononed stop
-endif
+-include OS/$(DISTRO)/makefile.in
 
 ifeq (install,$(findstring install, $(MAKECMDGOALS)))
 ifneq ($(USERID), 0)
@@ -100,20 +95,22 @@ all: daemon cli overlay
 .PHONY: install-daemon
 install-daemon:
 	@echo -n "Installing daemon "
-	@install $(BINAME1) /usr/bin/$(BINAME1) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) $(BINAME1) /usr/bin/$(BINAME1) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 
 .PHONY: install-cli
 install-cli:
 	@echo -n "Installing CLI "
-	@install -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+ifeq ($(AUTOCOMP), 1)
 	@echo -n "Installing CLI autocomplete for bash "
-	@install -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+endif
 
 .PHONY: install-overlay
 install-overlay:
 	@echo -n "Installing overlay "
-	@install argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
-	@bash setup-overlay.sh $(BOOTLOC)/config.txt
+	@$(INSTALL) argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@$(BASH) setup-overlay.sh $(BOOTLOC)/config.txt
 ifeq ($(I2CHELPER), 1)
 	@echo "Checking /etc/modules-load.d/raspberrypi.conf"
 	@echo -e "i2c-dev\ni2c-bcm2708" >> /etc/modules-load.d/raspberrypi.conf
@@ -123,18 +120,16 @@ endif
 install-service:
 	@echo "Installing services "
 	@echo -n "argononed.service ... "
-#	@install -m 644 argononed.service /etc/systemd/system/argononed.service 2>/dev/null && echo "Successful" || { echo "Failed"; true; } 
-	@install -m $(SERVICE_FILE_PERMISSIONS) $(SERVICE_FILE) $(SERVICE_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; } 
+	@$(INSTALL) -m $(SERVICE_FILE_PERMISSIONS) $(SERVICE_FILE) $(SERVICE_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; } 
 ifeq ($(INITSYS), OPENRC)
 	@echo -n "shutdown-argonone ... "
-	@install $(BINAME2) /usr/bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) $(BINAME2) /usr/bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo -n "shutdown service ... "
-	@install -m 744 $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 744 $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 endif
 ifeq ($(INITSYS), SYSTEMD)
 	@echo -n "argonone-shutdown ... "
-#	@install argonone-shutdown /lib/systemd/system-shutdown/argonone-shutdown 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
-	@install $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo "Refresh services list"
 	@systemctl daemon-reload
 endif
@@ -187,9 +182,9 @@ endif
 clean:
 	-@$(RM) *.o 2>/dev/null || true
 	-@$(RM) argonone.dtbo 2>/dev/null || true
-	-@$(RM) $(BINAME) 2>/dev/null || true
 	-@$(RM) $(BINAME1) 2>/dev/null || true
 	-@$(RM) $(BINAME2) 2>/dev/null || true
+	-@$(RM) $(BINAME3) 2>/dev/null || true
 
 .PHONY: mrproper
 mrproper: clean

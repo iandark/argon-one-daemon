@@ -1,0 +1,10 @@
+# Installer can now do this check without user
+#install:: install-service
+#ifeq ($(I2CBUS),0)
+#    @echo "IMPORTANT!!!!\n********************************\nYou must check /etc/modules-load.d/raspberrypi.conf contains these two lines\ni2c-dev\ni2c-bcm2708"
+#endif
+
+install:: install-overlay
+ifeq ($(I2CHELPER), 1)
+	@$(BASH) OS/manjaro-arm/i2chelper.sh 2> /dev/null
+endif	

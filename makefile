@@ -47,6 +47,9 @@ ifeq ($(INITSYS), SYSTEMD)
 	SERVICE_STOP=systemctl stop argononed
 endif
 -include OS/$(DISTRO)/makefile.in
+ifndef SERVICE_FILE
+$(error makefile configuration error!)
+endif
 
 ifeq (install,$(findstring install, $(MAKECMDGOALS)))
 ifneq ($(USERID), 0)
@@ -90,7 +93,7 @@ cli: $(BINAME3)
 
 .PHONY: all
 all: daemon cli overlay
-	@echo "Make: Complete"
+	@echo "MAKE: Complete"
 
 .PHONY: install-daemon
 install-daemon:
@@ -111,25 +114,16 @@ install-overlay:
 	@echo -n "Installing overlay "
 	@$(INSTALL) argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
 	@$(BASH) setup-overlay.sh $(BOOTLOC)/config.txt
-ifeq ($(I2CHELPER), 1)
-	@echo "Checking /etc/modules-load.d/raspberrypi.conf"
-	@echo -e "i2c-dev\ni2c-bcm2708" >> /etc/modules-load.d/raspberrypi.conf
-endif	
+
 
 .PHONY: install-service
 install-service:
 	@echo "Installing services "
 	@echo -n "argononed.service ... "
 	@$(INSTALL) -m $(SERVICE_FILE_PERMISSIONS) $(SERVICE_FILE) $(SERVICE_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; } 
-ifeq ($(INITSYS), OPENRC)
-	@echo -n "shutdown-argonone ... "
-	@$(INSTALL) $(BINAME2) /usr/bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
-	@echo -n "shutdown service ... "
-	@$(INSTALL) -m 744 $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
-endif
-ifeq ($(INITSYS), SYSTEMD)
 	@echo -n "argonone-shutdown ... "
 	@$(INSTALL) $(SHUTDOWN_FILE) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+ifeq ($(INITSYS), SYSTEMD)
 	@echo "Refresh services list"
 	@systemctl daemon-reload
 endif
@@ -137,15 +131,9 @@ endif
 	@$(SERVICE_ENABLE) argononed &>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Starting Service "
 	@timeout 5s $(SERVICE_START) &>/dev/null && echo "Successful" || { ( [ $$? -eq 124 ] && echo "Timeout" || echo "Failed" ) }
-ifeq ($(DISTRO), manjaro-arm)
-	@echo -e "IMPORTANT!!!!\n********************************\nYou must check /etc/modules-load.d/raspberrypi.conf contains these two lines\ni2c-dev\ni2c-bcm2708"
-endif
-ifeq ($(DISTRO), gentoo)
-	@echo -e "IMPORTANT!!!!\n********************************\nPlease ensure your config.txt containes\ndtparam=i2c_arm=on"
-endif
 
 .PHONY: install
-install: install-daemon install-cli install-service install-overlay
+install:: install-daemon install-cli install-service install-overlay
 	@echo "Install Complete"
 
 .PHONY: uninstall

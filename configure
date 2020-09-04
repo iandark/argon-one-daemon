@@ -66,6 +66,8 @@ command -v make &> /dev/null && MAKE=1 || MAKE=0
 [[ $MAKE == 1 ]] && echo "OK" || echo "ERR"
 echo -n "bash-autocomplete : "
 [[ -d /etc/bash_completion.d ]] && { AUTOC=1 ; echo "OK";} || { AUTOC=0 ; echo "NOT INSTALLED";}
+echo -n "I2C Bus check : "
+[[ -a /dev/i2c-1 ]] && { I2CBUS=1 ; echo "ENABLED";} || { I2CBUS=0 ; echo "NOT ENABLED";}
 if [[ $GCC -eq 1 && $DTC -eq 1 && $MAKE -eq 1 ]]
 then
     echo "Dependency Check Successful" 
@@ -80,4 +82,5 @@ echo "BOOTLOC=${BOOTLOC}" >> makefile.conf
 echo "INITSYS=${INITSYS}" >> makefile.conf
 echo "I2CHELPER=${I2CHELPER}" >> makefile.conf
 echo "AUTOCOMP=${AUTOC}" >> makefile.conf
+echo "I2CBUS=${I2CBUS}" >> makefile.conf
 exit 0

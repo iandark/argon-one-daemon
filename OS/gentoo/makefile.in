@@ -1,10 +1,16 @@
 SERVICE_FILE=OS/gentoo/argononed
 SERVICE_FILE_PERMISSIONS=744
 SERVICE_PATH=/etc/initd/argononed
-SHUTDOWN_FILE=OS/gentoo/argononed.stop
-SHUTDOWN_PATH=/etc/local.d/argononed.stop
+SHUTDOWN_FILE=$(BINAME2)
+SHUTDOWN_PATH=/usr/bin/shutdown_argonone
 SERVICE_ENABLE=rc-updateadd
 SERVICE_DISABLE=rc-updatedel
 SERVICE_START=/etc/init.d/argononedstart
 SERVICE_STOP=/etc/init.d/argononedstop
 
+install:: install-service
+	@echo -n "shutdown service ... "
+	@$(INSTALL) -m 744 OS/gentoo/argononed.stop /etc/local.d/argononed.stop 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+
+install:: install-overlay
+	@$(BASH) OS/gentoo/i2cenable.sh $(BOOTLOC)/config.txt

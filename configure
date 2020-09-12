@@ -49,6 +49,9 @@ case $DISTRO in
     #INITSYS="SYSTEMD"
     BOOTLOC="/boot/firmware"
     ;;
+"libreelec")
+    echo "OK"
+    BOOTLOC="/flash"
 *)
     echo "WARNING: UNKNOWN DISTRO, The installer may not work";;
 esac

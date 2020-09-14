@@ -163,7 +163,7 @@ void Read_config()
 void Set_FanSpeed(uint8_t fan_speed)
 {
     static int file_i2c = 0;
-    static uint8_t speed = 0;
+    static uint8_t speed = 1;
 	if (file_i2c == 0)
     {
         char *filename = (char*)"/dev/i2c-1";

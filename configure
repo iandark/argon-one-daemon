@@ -30,7 +30,7 @@ INITSYS="SYSTEMD"
 BOOTLOC="/boot"
 echo -ne "Distro check [$DISTRO]\t"
 case $DISTRO in
-"raspbian")
+"raspbian" | "debian")
     echo "OK"
     #INITSYS="SYSTEMD"
     #BOOTLOC="/boot"

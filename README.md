@@ -22,7 +22,7 @@ Simply put I didn't like the OEM software.  It works sure but it uses Python and
 ## OS Support
 
 The installer now requires you to run ```./configure``` before you run make. This will set up the installer so that it should be able to install on multiple OS's.  The current list of supported OS's are  
-* Raspberry Pi OS 32bit *(64bit is untested but should work as well)*    
+* Raspberry Pi OS 32bit or 64bit    
 * RetroPi
 * Gentoo
 * Manjaro-arm   

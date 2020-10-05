@@ -67,30 +67,30 @@ static char args_doc[] = "";
 
 /* The options we understand. */
 static struct argp_option options[] = {
-  {0 ,0 ,0, 0, ">> Fan Control modes <<"},
-  {"cooldown", 'c', "Temp", 0,  "Set to Cool Down Mode" },
-  {"manual",   'm', 0,      0,  "Set to Manual Mode"},
-  {"fan",      'f', "SPEED",0,  "Set Fan speed"},
-  {0 ,0 ,0, 0, ">> Monitoring Controls <<"},
-  {"off",      'o', 0,      0,  "Turn temperature monitoring off"},
-  {"auto",     'a', 0,      0,  "Set to Automatic Mode"},
-  {0, 0, 0, 0,  ">> Schedule Operations <<"},
-  {"fan0", 3, "VALUE",0, "Set Fan1 value"},
-  {"fan1", 4, "VALUE",0, "Set Fan2 value"},
-  {"fan2", 5, "VALUE",0, "Set Fan3 value"},
-  {"temp0", 6, "VALUE",0, "Set Temperature1 value"},
-  {"temp1", 7, "VALUE",0, "Set Temperature2 value"},
-  {"temp2", 8, "VALUE",0, "Set Temperature3 value"},
-  {"hysteresis", 9, "VALUE",0,  "Set Hysteresis"},
-  {0, 0, 0, 0, ""},
-  {"commit",    1,  0,      0,  "Commit changes"},
-  {"reload",   'r', 0,      OPTION_ALIAS},
+  {0 ,0 ,0, 0, ">> Fan Control modes <<", 1},
+  {"cooldown", 'c', "Temp", 0,  "Set to Cool Down Mode", 1},
+  {"manual",   'm', 0,      0,  "Set to Manual Mode", 1},
+  {"fan",      'f', "SPEED",0,  "Set Fan speed", 1},
+  {0 ,0 ,0, 0, ">> Monitoring Controls <<",2},
+  {"off",      'o', 0,      0,  "Turn temperature monitoring off",2},
+  {"auto",     'a', 0,      0,  "Set to Automatic Mode",2},
+  {0, 0, 0, 0,  ">> Schedule Operations <<",3},
+  {"fan0", 3, "VALUE",0, "Set Fan1 value",3},
+  {"fan1", 4, "VALUE",0, "Set Fan2 value",3},
+  {"fan2", 5, "VALUE",0, "Set Fan3 value",3},
+  {"temp0", 6, "VALUE",0, "Set Temperature1 value",3},
+  {"temp1", 7, "VALUE",0, "Set Temperature2 value",3},
+  {"temp2", 8, "VALUE",0, "Set Temperature3 value",3},
+  {"hysteresis", 9, "VALUE",0,  "Set Hysteresis",3},
+  {0, 0, 0, 0, "",4},
+  {"commit",    1,  0,      0,  "Commit changes",4},
+  {"reload",   'r', 0,      OPTION_ALIAS,"",4},
   //{"load",     'l', "FILE", 0,  "Load New Schedule "},
-  {0, 0, 0, 0, ">> Output Options <<" },
-  {"decode",   'd', 0,      0,  "Decode contents of Shared Memory"},
-  {"verbose",  'v', 0,      0,  "Produce verbose output" },
-  {"quiet",    'q', 0,      0,  "Don't produce any output" },
-  {"silent",   's', 0,      OPTION_ALIAS },
+  {0, 0, 0, 0, ">> Output Options <<" ,5},
+  {"decode",   'd', 0,      0,  "Decode contents of Shared Memory",5},
+  {"verbose",  'v', 0,      0,  "Produce verbose output" ,5},
+  {"quiet",    'q', 0,      0,  "Don't produce any output" ,5},
+  {"silent",   's', 0,      OPTION_ALIAS ,"",5},
   { 0 }
 };
 
@@ -122,6 +122,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case 'r': case 1:
       arguments->reload = 1;
+      break; 
     case ARGP_KEY_ARG:
       if (state->arg_num >= 1)
       {
@@ -278,7 +279,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 }
 
 /* Our argp parser. */
-static struct argp argp = { options, parse_opt, args_doc, doc };
+static struct argp argp = { options, parse_opt, args_doc, doc, 0, 0, 0 };
 
 /// ====================================================================
 

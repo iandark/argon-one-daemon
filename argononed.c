@@ -48,7 +48,7 @@ SOFTWARE.
 #include "identapi.h"
 #include "argononed.h"
 
-#define VERSION "0.2.1"
+#define VERSION "0.3.0"
 #ifndef LOG_LEVEL
 #define LOG_LEVEL 6
 #endif
@@ -242,8 +242,8 @@ void Set_FanSpeed(uint8_t fan_speed)
 
 void TMR_Get_temp(size_t timer_id, void *user_data)
 {
-    static uint32_t fdtemp = 0;
-    uint32_t CPU_Temp = 0;
+    static int32_t fdtemp = 0;
+    int32_t CPU_Temp = 0;
 	static uint8_t fanspeed = 0;
     uint32_t property[10] =
     {
@@ -461,7 +461,7 @@ int gpioInitialise(void)
    return 0;
 }
 
-int main(int argc,char **argv)
+int main() // int argc,char **argv) // REMOVED AS NOT USED
 {
     // check for unclean exit
     if (getuid() != 0) {

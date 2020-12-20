@@ -240,6 +240,8 @@ void Set_FanSpeed(uint8_t fan_speed)
     }
 }
 
+// Read temperature and process temperature data
+// This is meant to be called with a Timer.
 void TMR_Get_temp(size_t timer_id, void *user_data)
 {
     static int32_t fdtemp = 0;
@@ -327,6 +329,8 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
     }
 }
 
+// This Function is used to watch for the power button events.
+// Call is Blocking 
 uint32_t monitor_device()
 {
 	struct gpioevent_request req;

@@ -315,6 +315,7 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
                 log_message(LOG_INFO, "Cool down complete. switch to AUTO mode"); 
                 Set_FanSpeed(0);
                 runstate = 0;
+                ptr->fanmode = 0;
             } else {
                 Set_FanSpeed(fanstage[3]);
             }

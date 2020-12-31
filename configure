@@ -45,7 +45,7 @@ case $DISTRO in
     I2CHELPER=1
     ;;
 "ubuntu")
-    echo "WARN - UNTESTED"
+    echo "OK"
     #INITSYS="SYSTEMD"
     BOOTLOC="/boot/firmware"
     ;;

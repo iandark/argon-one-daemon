@@ -1,6 +1,6 @@
 # Argon One Daemon
 
-A replacement daemon for the Argon One Raspberry Pi case.  This will also now support the Argon Artik Fan Hat
+A replacement daemon for the Argon One Raspberry Pi cases, and the Argon Artik Fan Hat.
 
 ## How To Install
 
@@ -26,8 +26,8 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * RetroPi
 * Gentoo
 * Manjaro-arm   
-* Ubuntu *(Untested)*  
-If your OS isn't on this list it means that the installer isn't setup for your OS and it may or may not be able to install on your system. 
+* Ubuntu  
+If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system. 
 
 ## Logging Options
 

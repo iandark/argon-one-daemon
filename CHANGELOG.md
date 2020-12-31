@@ -1,3 +1,9 @@
+0.2.2
+* PATCH Shared memory update after cooldown
+* Fix a typos in log output and function name
+* Confirmed Operation on the Argon One m.2 case
+* Confirmed Ubuntu is a fully working
+
 0.2.1
 * PATCH for Argon Artik Fan hat
 * Added OS support for Gentoo and Manjaro

@@ -48,7 +48,7 @@ SOFTWARE.
 #include "identapi.h"
 #include "argononed.h"
 
-#define VERSION "0.2.1"
+#define VERSION "0.2.2"
 #ifndef LOG_LEVEL
 #define LOG_LEVEL 6
 #endif
@@ -443,7 +443,7 @@ void gpioSetPullUpDown(unsigned gpio, unsigned pud)
    log_message(LOG_INFO,"Set GPIO %d pull up/down to %s", gpio, PI_PUD_STR[pud]);
 }
 
-int gpioInitialise(void)
+int gpioInitialize(void)
 {
    int fd;
    fd = open("/dev/gpiomem", O_RDWR | O_SYNC) ;
@@ -488,9 +488,9 @@ int main(int argc,char **argv)
     log_message(LOG_INFO,"Startup ArgonOne Daemon ver %s", VERSION);
     log_message(LOG_INFO,"Loading Configuration");
     Read_config();
-    if (gpioInitialise() < 0)
+    if (gpioInitialize() < 0)
     {
-        log_message(LOG_FATAL,"GPIO initialise failed");
+        log_message(LOG_FATAL,"GPIO initialization failed");
         return 1;
     }
     log_message(LOG_INFO,"GPIO initialized");

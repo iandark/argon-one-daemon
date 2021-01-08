@@ -332,14 +332,17 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
 
 // This Function is used to watch for the power button events.
 // Call is Blocking 
-uint32_t monitor_device()
+// Return 0 when Pule_Time_ms is valid
+int32_t monitor_device(uint32_t *Pulse_Time_ms)
 {
 	struct gpioevent_request req;
 	int fd;
-	int ret;
+	int ret = 0;
+    *Pulse_Time_ms = 0; // Initialize to zero
 	fd = open("/dev/gpiochip0", 0);
 	if (fd == -1) {
-		ret = -errno;
+        log_message(LOG_CRITICAL, "Unable to open /dev/gpiochip0 : %s", strerror(errno));
+		ret = errno;
 		goto exit_close_error;
 	}
 	req.lineoffset = 4;
@@ -348,7 +351,8 @@ uint32_t monitor_device()
 	strcpy(req.consumer_label, "argonone-powerbutton");
 	ret = ioctl(fd, GPIO_GET_LINEEVENT_IOCTL, &req);
 	if (ret == -1) {
-		ret = -errno;
+        log_message(LOG_CRITICAL, "Unable to get GPIO Line Event : %s", strerror(errno));
+		ret = errno;
 		goto exit_close_error;
 	}
 	log_message(LOG_INFO, "Monitoring line 4 on /dev/gpiochip0");
@@ -358,25 +362,36 @@ uint32_t monitor_device()
 		ret = read(req.fd, &event, sizeof(event));
 		if (ret == -1) {
 			if (errno == -EAGAIN) {
-				continue;
+				continue;  // No Data Retry
 			} else {
-				ret = -errno;
+                log_message(LOG_ERROR, "Unable to read GPIO event : %s", strerror(errno));
+				ret = errno;
 				break;
 			}
 		}
 		if (ret != sizeof(event)) {
-			ret = -EIO;
+            log_message(LOG_ERROR, "GPIO Event malformed Reply");
+			ret = EIO;
 			break;
 		}
 		if (event.id == GPIOEVENT_EVENT_RISING_EDGE)
+        {
         	Rtime = event.timestamp / 1000000;
+        }
 		if (event.id == GPIOEVENT_EVENT_FALLING_EDGE)
         {
-			ret = (event.timestamp / 1000000) - Rtime;
-			break;
+            if ( ((event.timestamp / 1000000) - Rtime) > 0 )
+            {
+                *Pulse_Time_ms = (event.timestamp / 1000000) - Rtime;
+                ret = 0;
+                break;
+            }
+            // negative pulse time is invalid and should be ignored
+            // TODO: Delect under cause and report
 		}
 	}
 exit_close_error:
+    if (ret != 0) log_message(LOG_DEBUG, "FUNC [monitor_device] Exit with error %d : %s", ret, strerror(ret));
 	close(fd);
 	return ret;
 }
@@ -517,7 +532,7 @@ int main() // int argc,char **argv) // REMOVED AS NOT USED
     initialize_timers();
     log_message(LOG_INFO,"Now running as a daemon");
     size_t timer1 __attribute__((unused)) = start_timer_long(2, TMR_Get_temp,TIMER_PERIODIC,NULL);
-    log_message(LOG_INFO, "Begin Initalising shared memory");
+    log_message(LOG_INFO, "Begin Initalizing shared memory");
 	int shm_fd =  shm_open(SHM_FILE, O_CREAT | O_RDWR, 0666);
 	ftruncate(shm_fd, SHM_SIZE);
     ptr = mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
@@ -535,10 +550,14 @@ int main() // int argc,char **argv) // REMOVED AS NOT USED
     uint32_t count = 0;
     do
     {
-        count = monitor_device();
-        log_message(LOG_DEBUG, "Pulse received %dms", count);
-        if ((count >= 19 && count <= 21) || (count >= 39 && count <= 41)) break;
-        else log_message(LOG_ERROR, "Unrecognized pulse width received");
+        if (monitor_device(&count) == 0)
+        {
+            log_message(LOG_DEBUG, "Pulse received %dms", count);
+            if ((count >= 19 && count <= 21) || (count >= 39 && count <= 41)) break;
+            else log_message(LOG_ERROR, "Unrecognized pulse width received [%dms]", count);
+        }
+        // monitor_device has produced and error
+        usleep(10000);  // Shouldn't be reached but prevent overloading CPU
     } while (1);
     cleanup();
     if (count >= 19 && count <= 21)

@@ -44,7 +44,7 @@ struct tmr_table
     struct tmr_table * next;
 };
 
-static void * _timer_thread(void * data);
+static void * _timer_thread();
 static pthread_t tmr_pthread;
 static struct tmr_table *tmr_table_pointer = NULL;
 
@@ -196,7 +196,7 @@ struct tmr_table * _get_timer_from_fd(int fd)
     return NULL;
 }
 
-void * _timer_thread(void * data)
+void * _timer_thread()
 {
     struct pollfd ufds[MAX_TIMER_COUNT] = {{0}};
     int iMaxCount = 0;

@@ -6,7 +6,7 @@ RM      = rm -v
 DTC     = dtc -@ -I dts -O dtb -o
 BASH	= bash
 INSTALL = install
-CFLAGS  = -Wall -s -O3 -Wextra -fanalyzer -Wpedantic
+CFLAGS  = -Wall -s -O3 -Wextra -Wpedantic
 LFLAGS  = -lpthread -lrt
 OBJ     = argononed.o event_timer.o
 BINAME1 = argononed
@@ -73,7 +73,7 @@ $(BINAME2): argonone-shutdown.c
 
 $(BINAME3): argonone-cli.c
 	@echo "Build $(BINAME3)"
-	$(CC) -o $(BINAME3) $^ $(CFLAGS) -lrt
+	$(CC) -o $(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) -lrt
 
 $(OVERLAY): argonone.dts
 	@echo "Build $@"

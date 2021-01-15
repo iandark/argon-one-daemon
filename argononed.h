@@ -51,6 +51,17 @@ struct DTBO_Config {
     uint8_t hysteresis;
 };
 
+#define REQ_WAIT 0       //Waiting for request 
+#define REQ_RDY  1       //Request is ready for processing
+#define REQ_PEND 2       //Request pending
+#define REQ_ERR  3       //Error in last Request
+#define REQ_SYNC 4       //Request Status to sync
+#define REQ_CLR  5       //Clear request
+#define REQ_RST  6       //Request Daemon to reset 
+#define REQ_HOLD 7       //Hold Requests
+#define REQ_OFF  8       //Request Daemon to shutdown
+#define REQ_SIG  9       //Request Commit Signal
+
 struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanspeed;           //      WO  |   RO
     uint8_t temperature;        //      WO  |   RO
@@ -63,6 +74,6 @@ struct SHM_Data {               //  DAEMON  |   CLIENT
 
 void TMR_Get_temp(size_t timer_id, void *user_data);
 void Set_FanSpeed(uint8_t fan_speed);
-void reload_config_from_shm();
+int reload_config_from_shm();
 
 #endif

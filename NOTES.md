@@ -52,7 +52,7 @@ The on change to highlight of others mentioned is *Request Poller* This will be 
 The flow of requesting an action from the daemon will be as follows.
 - **C** build request
 - **C** set control byte to REQ_RDY *Request Ready*
-- **D** set status byte to REQ_PND *Request Pending*
+- **D** set status byte to REQ_PEND *Request Pending*
 - **D** copy request message out of shared memory and reset message
 - **D** verify request data
 - **D** ON ERROR in data set control byte to REQ_ERR and exit loop

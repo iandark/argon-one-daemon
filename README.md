@@ -9,9 +9,10 @@ I've tried to make the installer as simple as possible. After cloning this repo 
 ## Configuration
 
 Configuration is all done in the **/boot/config.txt** look for this line ```dtoverlay=argonone``` The parameters are simple.
+
 * **fantemp[0-2]** - Sets the temperatures at which the fan will spin up
-* **fanspeed[0-2]** - Sets the speed at which the fan will spin 
-* **hysteresis** - Sets the hysteresis 
+* **fanspeed[0-2]** - Sets the speed at which the fan will spin
+* **hysteresis** - Sets the hysteresis
 
 The default values are the same as the OEM at 55℃ the fan will start at 10%, at 60℃ the speed will increase to 55% and finally after 65℃ the fan will spin at 100%.  The default hysteresis is 3℃
 
@@ -22,12 +23,14 @@ Simply put I didn't like the OEM software.  It works sure but it uses Python and
 ## OS Support
 
 The installer now requires you to run ```./configure``` before you run make. This will set up the installer so that it should be able to install on multiple OS's.  The current list of supported OS's are  
-* Raspberry Pi OS 32bit or 64bit    
+
+* Raspberry Pi OS 32bit or 64bit
 * RetroPi
 * Gentoo
-* Manjaro-arm   
-* Ubuntu  
-If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system. 
+* Manjaro-arm
+* Ubuntu
+
+If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system.
 
 ## Logging Options
 
@@ -38,16 +41,17 @@ The log levels go in this order: FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG. A
 ## Upgrading to the latest version
 
 In order to upgrade to the latest version the current method is to pull the updates from gitlab and execute the following commands
-```
+
+```text
 make mrproper
 ./configure
 make
 sudo make install-daemon install-cli
 ```
 
-# The Argon One CLI tool  
+## The Argon One CLI tool
 
-This is the new command line tool that lets you change setting on the fly. It communicates with shared memory of the daemon, so the daemon must be running for this tool to be of use. It also introduced new modes for the daemon such as Cool Down and Manual control over the fan. 
+This is the new command line tool that lets you change setting on the fly. It communicates with shared memory of the daemon, so the daemon must be running for this tool to be of use. It also introduced new modes for the daemon such as Cool Down and Manual control over the fan.
 
 ### Cool Down Mode
 
@@ -65,7 +69,7 @@ This is the default mode the daemon always starts in this mode and will follow t
 
 ### Off Mode
 
-Yes an off switch, maybe you want to do something and you need to be sure the fan doesn't turn on and spoil it.  You can turn off the fan as follows ```argonone-cli --off``` 
+Yes an off switch, maybe you want to do something and you need to be sure the fan doesn't turn on and spoil it.  You can turn off the fan as follows ```argonone-cli --off```
 ***NOTE***: *When the fan is off nothing but turning to a different mode will turn it back on*
 
 ## Setting setpoints
@@ -76,14 +80,16 @@ For the fan the minimum speed is 10% and the maximum is 100%.
 For Hysteresis the minimum is 0° and the maximum is 10°  
 
 You can set your values like in this example.  
-```argonone-cli --fan0 25 --temp0 50 --hysteresis 10 --commit```   
+```argonone-cli --fan0 25 --temp0 50 --hysteresis 10 --commit```  
 **OR**  
-```
+
+```text
 argonone-cli --fan0 25
 argonone-cli --temp0 50
 argonone-cli --hysteresis 10
 argonone-cli --commit
 ```
+
 The changes don't have to made in one shot but you **MUST** commit them for them to take effect.
 
 ***IMPORTANT*** *There is no feedback from the daemon if the changes are applied successfully.  You can check the logs.  This feature is planned but not yet implemented*

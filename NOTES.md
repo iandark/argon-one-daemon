@@ -1,24 +1,24 @@
-## Shared Memory
+# Shared Memory
 
 Details on the shared memory interface.
 
 bytes 1 and 2 : are status bytes for fan speed and temperature  
 bytes 3 - 9 : are configuration of set points same format as Overlay  
 byte 10 : fan mode this will be used for switching how the fan will behave.  
->   0 - **AUTO** this is default the fan will follow the set points.   
->   1 - **OFF** the fan will not turn on or follow the set points.  
->   2 - **MANUAL** The fan will now follow the *fanspeed_Override* byte  
->   3 - **COOLDOWN** the fan will run at the *fanspeed_Override* byte  setting until the temperature stored in the *temperature_target* byte is reached. The fan will then switch to **AUTO**  
+> 0 - **AUTO** this is default the fan will follow the set points.  
+> 1 - **OFF** the fan will not turn on or follow the set points.  
+> 2 - **MANUAL** The fan will now follow the *fanspeed_Override* byte  
+> 3 - **COOLDOWN** the fan will run at the *fanspeed_Override* byte  setting until the temperature stored in the *temperature_target* byte is reached. The fan will then switch to **AUTO**  
 
 byte 11 : Temperature target this is used with special fan modes  
 byte 12 : Fan speed override this is used with special fan modes  
 byte 13 : Status byte  
->   The shared memory will be validated before it's read. as such this byte will return a status.    
->  0 : OK  
->  1 : Validating  
->  2 : ERROR  
+> The shared memory will be validated before it's read. as such this byte will return a status.  
+> 0 : OK  
+> 1 : Validating  
+> 2 : ERROR  
 
-### Valid Ranges 
+## Valid Ranges
 
 | Byte(s)   | Name                  | Minimum   | Maximum   |
 | :-------: | :-------------------- | :-------- | :-------- |
@@ -30,14 +30,17 @@ byte 13 : Status byte
 | 10        | Fan Mode              | 0         | 3         |
 | 11        | Temperature Target    | 30        | 85        |
 | 12        | Fan Speed Override    | 10 *\*\** | 100       |
-| 13        | Status of Request     | 0         | 2         |
+| 13        | Status of Request     | 0         | 2         |  
+
 *\**    Hysteresis can be as high as 10 if the thresholds are 11 degrees apart  
 *\*\**  Fan Speed Override can be set by the daemon to 0 this is allowed
 
 ---
-# Version 0.3.x Improvements
+
+## Version 0.3.x Improvements
 
 This branch of code is meant to clean up and improve the 0.2.x branch.  This will fix compiler warnings and improve the shared memory interface.  Goals of this branch will be.
+
 - fix compiler warnings as much as possible
 - expand and finish the shared memory interface
 - makefile and build changes for enabling or disabling features
@@ -50,6 +53,7 @@ The goal of shared memory was to have control of the daemon from user space.  Th
 The on change to highlight of others mentioned is *Request Poller* This will be a timer running in the daemon to verify and read requests **without** the need of sending a signal to the daemon to execute the request.  A request will be execute when the control byte is set by the client and the daemon will update it's request status as required.  An important note is that the control byte will be overwritten by the daemon to clear the request. The only time the daemon will accept a request is when it's status byte is set to waiting.
 
 The flow of requesting an action from the daemon will be as follows.
+
 - **C** build request
 - **C** set control byte to REQ_RDY *Request Ready*
 - **D** set status byte to REQ_PEND *Request Pending*
@@ -57,16 +61,17 @@ The flow of requesting an action from the daemon will be as follows.
 - **D** verify request data
 - **D** ON ERROR in data set control byte to REQ_ERR and exit loop
 - **D** Apply request
-- **D** set status byte to REQ_WAIT 
+- **D** set status byte to REQ_WAIT
 
 The valid values of the control and status bytes are
-- REQ_WAIT - Waiting for request 
+
+- REQ_WAIT - Waiting for request
 - REQ_RDY - Request is ready for processing
 - REQ_PEND - Request pending
 - REQ_ERR - Error in last Request
 - REQ_SYNC - Request Status to sync
 - REQ_CLR - Clear request
-- REQ_RST - Request Daemon to reset 
+- REQ_RST - Request Daemon to reset
 - REQ_HOLD - Hold Requests
 - REQ_OFF - Request Daemon to shutdown
 - REQ_SIG - Request Commit Signal

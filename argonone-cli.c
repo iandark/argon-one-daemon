@@ -102,6 +102,7 @@ static struct argp_option options[] = {
   {0, 0, 0, 0, "",4},
   {"commit",    1,  0,      0,  "Commit changes",4},
   {"reload",   'r', 0,      OPTION_ALIAS,"",4},
+  {"reset",    'R', 0,      0,  "Reset Shared Memory",4},
   //{"load",     'l', "FILE", 0,  "Load New Schedule "},
   {0, 0, 0, 0, ">> Output Options <<" ,5},
   {"decode",   'd', 0,      0,  "Decode contents of Shared Memory",5},
@@ -115,7 +116,7 @@ static struct argp_option options[] = {
 struct arguments
 {
   char *args;
-  int silent, verbose, reload;
+  int silent, verbose, reload, reset;
   int mode;
   int fanoverride;
   int targettemp; 
@@ -141,6 +142,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       arguments->reload = 1;
       break; 
     case ARGP_KEY_ARG:
+      dbgprint (stderr,"Number of arguments %d\n", state->arg_num);
       if (state->arg_num >= 1)
       {
         fprintf(stderr, "ERROR:  Bad Argument");
@@ -205,6 +207,9 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       arguments->fanoverride = fanspeed;
       break;
     }
+    case 'R':
+      arguments->reset = 1;
+      break;
     case 3:
       if (mode_switch != -1 && mode_switch != 4)
       {
@@ -283,11 +288,10 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case ARGP_KEY_END:
-      if (state->arg_num < 1)
+      /* if (state->arg_num == 0) //  Not enough arguments.
       {
-        /* Not enough arguments. */
-        argp_usage (state);
-      }
+          argp_usage (state);
+      } */
       break;
 
     default:
@@ -314,7 +318,8 @@ int Send_Request(struct SHM_Data* ptr, int pid)
 {
     if (pid != 0)
     {
-       return kill(pid, 1);
+      dbgprint(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
+      return kill(pid, 1);
     }
     uint8_t last_state = 0;
     dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
@@ -343,12 +348,56 @@ int Send_Request(struct SHM_Data* ptr, int pid)
    return 0;
 }
 
+/**
+ * Send Reset Request and wait for reply
+ * 
+ * \param ptr Pointer to share memory data
+ * \param pid PID of the daemon
+ * \return 0 on success
+ */
+int Send_Reset(struct SHM_Data* ptr, int pid)
+{
+    if (pid != 0)
+    {
+      dbgprint(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
+      return kill(pid, 1);
+    }
+    uint8_t last_state = 0;
+    dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (ptr->status != REQ_WAIT) 
+    {
+        fprintf (stderr, "WARNING:  argononed isn't ready retry");
+        return 1;
+    }
+    ptr->status = REQ_CLR;
+    for(;ptr->status != REQ_WAIT;) 
+    {
+        if (last_state != ptr->status)
+        {
+            dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+            last_state = ptr->status;
+            if (ptr->status == REQ_ERR)
+            {
+                fprintf (stderr, "ERROR:  The was an error in your request\n");
+                return -1;
+            }
+        }
+        msync(ptr,13,MS_SYNC);
+    } 
+    dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+   return 0;
+}
 int main (int argc, char** argv)
 {
     // if (getuid() != 0) {
     //     fprintf(stderr, "ERROR: Permissions error, must be run as root\n");
     //     exit(1);
     // }
+    if (argc == 1 )
+    {
+      fprintf(stderr, "Usage: argonone-cli [OPTION...]\nTry `argonone-cli --help' or `argonone-cli --usage' for more information.\n");
+      exit (1);
+    }
     FILE* file = fopen (LOCK_FILE, "r");
     int main_ret = 0;
     int d_pid = 0;
@@ -386,13 +435,17 @@ int main (int argc, char** argv)
     arguments.Schedule = &ptr->config;
     argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
-    dbgprint(stderr,">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
+    // dbgprint(stderr,">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
 
     if (arguments.mode < -2) 
     {
 
 
     } else {
+        if (arguments.reset)
+        {
+            Send_Reset(ptr, 0);
+        }
         if (arguments.mode > -1 && arguments.mode < 4)
         {
             ptr->fanmode = arguments.mode;

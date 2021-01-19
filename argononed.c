@@ -184,6 +184,19 @@ void Read_config()
 
 char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
 /**
+ * Reset Shared Memory to match correct values
+ * 
+ * \return none
+ */
+void reset_shm()
+{
+    memcpy(ptr->config.fanstages, &fanstage, sizeof(fanstage));
+    memcpy(ptr->config.thresholds, &threshold, sizeof(threshold));
+    ptr->config.hysteresis = hysteresis;
+    ptr->fanmode = runstate;
+}
+
+/**
  * Reload the configuration from shared memory
  * 
  * \return 0 on success
@@ -196,6 +209,7 @@ int reload_config_from_shm()
         if (ptr->config.thresholds[i] < lastval)
         {
             log_message(LOG_WARN,"Shared Memory contains bad value at threshold %d ABORTING reload", i);
+            reset_shm();
             return -1;
         }
     }
@@ -204,6 +218,7 @@ int reload_config_from_shm()
         if (ptr->config.fanstages[i] > 100 )
         {
             log_message(LOG_WARN,"Shared Memory contains bad value at fanstage %d ABORTING reload", i);
+            reset_shm();
             return -1;
         }
     }
@@ -284,7 +299,7 @@ void Set_FanSpeed(uint8_t fan_speed)
 void TMR_SHM_Reset(size_t timer_id, void *user_data __attribute__((unused)))
 {
     log_message(LOG_DEBUG,"SHM reset error flag");
-    timer_id = timer_id;
+    reset_shm();
     ptr->status = REQ_WAIT;
     stop_timer(timer_id);
     *(size_t*)user_data = 0;
@@ -323,9 +338,7 @@ void TMR_SHM_Interface(size_t timer_id __attribute__((unused)), void *user_data 
                 ptr->status = REQ_ERR;
                 break;
             case REQ_CLR: // The request area and reset shared memory
-                memcpy(ptr->config.fanstages, &fanstage, sizeof(fanstage));
-                memcpy(ptr->config.thresholds, &threshold, sizeof(threshold));
-                ptr->config.hysteresis = hysteresis;
+                reset_shm();
                 ptr->status = REQ_WAIT;
                 return;
             default:

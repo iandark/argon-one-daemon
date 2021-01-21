@@ -50,13 +50,6 @@ SOFTWARE.
 #include <argp.h>
 #include "argononed.h"
 
-#if LOG_LEVEL == 6
-#define dbgprint(ignore,fmt, ...) \
-        do { fprintf(stderr, fmt,  __VA_ARGS__); } while (0)
-#else
-#define dbgprint(...) /**/
-#endif
-
 char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
 char* STATUS_STR[11] = {"Waiting for request",
     "Request is ready for processing",
@@ -116,7 +109,7 @@ static struct argp_option options[] = {
 struct arguments
 {
   char *args;
-  int silent, verbose, reload, reset;
+  int silent, verbose, reload, reset, debug;
   int mode;
   int fanoverride;
   int targettemp; 
@@ -142,7 +135,6 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       arguments->reload = 1;
       break; 
     case ARGP_KEY_ARG:
-      dbgprint (stderr,"Number of arguments %d\n", state->arg_num);
       if (state->arg_num >= 1)
       {
         fprintf(stderr, "ERROR:  Bad Argument");
@@ -318,14 +310,16 @@ int Send_Request(struct SHM_Data* ptr, int pid)
 {
     if (pid != 0)
     {
-      dbgprint(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
+      if (arguments.debug) fprintf(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
+      if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Send HANGUP Signal to PID %d\n", pid);
       return kill(pid, 1);
     }
     uint8_t last_state = 0;
-    dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
     if (ptr->status != REQ_WAIT) 
     {
-        fprintf (stderr, "WARNING:  argononed isn't ready retry");
+        if (!arguments.silent) fprintf (stderr, "WARNING:  argononed isn't ready retry");
         return 1;
     }
     ptr->status = REQ_RDY;
@@ -333,17 +327,19 @@ int Send_Request(struct SHM_Data* ptr, int pid)
     {
         if (last_state != ptr->status)
         {
-            dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+            if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+            if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
             last_state = ptr->status;
             if (ptr->status == REQ_ERR)
             {
-                fprintf (stderr, "ERROR:  The was an error in your request\n");
+                if (!arguments.silent) fprintf (stderr, "ERROR:  The was an error in your request\n");
                 return -1;
             }
         }
         msync(ptr,13,MS_SYNC);
     } 
-    dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
     ptr->status = REQ_CLR;
    return 0;
 }
@@ -359,14 +355,14 @@ int Send_Reset(struct SHM_Data* ptr, int pid)
 {
     if (pid != 0)
     {
-      dbgprint(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
+      if (arguments.debug) fprintf(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
       return kill(pid, 1);
     }
     uint8_t last_state = 0;
-    dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
     if (ptr->status != REQ_WAIT) 
     {
-        fprintf (stderr, "WARNING:  argononed isn't ready retry");
+        if (!arguments.silent) fprintf (stderr, "WARNING:  argononed isn't ready retry");
         return 1;
     }
     ptr->status = REQ_CLR;
@@ -374,7 +370,7 @@ int Send_Reset(struct SHM_Data* ptr, int pid)
     {
         if (last_state != ptr->status)
         {
-            dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+            if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
             last_state = ptr->status;
             if (ptr->status == REQ_ERR)
             {
@@ -384,7 +380,7 @@ int Send_Reset(struct SHM_Data* ptr, int pid)
         }
         msync(ptr,13,MS_SYNC);
     } 
-    dbgprint (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
+    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
    return 0;
 }
 int main (int argc, char** argv)
@@ -398,6 +394,10 @@ int main (int argc, char** argv)
       fprintf(stderr, "Usage: argonone-cli [OPTION...]\nTry `argonone-cli --help' or `argonone-cli --usage' for more information.\n");
       exit (1);
     }
+    #if LOG_LEVEL == 6
+    arguments.debug = 1;
+    #endif
+    argp_parse (&argp, argc, argv, 0, 0, &arguments);
     FILE* file = fopen (LOCK_FILE, "r");
     int main_ret = 0;
     int d_pid = 0;
@@ -405,14 +405,14 @@ int main (int argc, char** argv)
     {
         if (errno == 2)
         {
-          fprintf(stderr, "ERROR:  argononed is not running.\n");
+          if (!arguments.silent) fprintf(stderr, "ERROR:  argononed is not running.\n");
           exit (1);
         }
         if (errno == 13)
         {
-          fprintf(stderr,"INFO:  Running under normal user some features may not work.\n");
+          if (!arguments.silent) fprintf(stderr,"INFO:  Running under normal user some features may not work.\n");
         } else {
-          fprintf(stderr,"ERROR:  Couldn't open %s [ %s ]\n",LOCK_FILE, strerror(errno));
+          if (!arguments.silent) fprintf(stderr,"ERROR:  Couldn't open %s [ %s ]\n",LOCK_FILE, strerror(errno));
           exit(1);
         }
     } else {
@@ -420,7 +420,7 @@ int main (int argc, char** argv)
       fclose (file);
       if (kill(d_pid, 0) != 0)
       {
-          fprintf(stderr, "ERROR:  argononed is not running.\n");
+          if (!arguments.silent) fprintf(stderr, "ERROR:  argononed is not running.\n");
           exit (1);
       }
     }
@@ -429,13 +429,12 @@ int main (int argc, char** argv)
     ftruncate(shm_fd, SHM_SIZE);
     ptr = mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (ptr == MAP_FAILED) {
-        fprintf(stderr, "ERROR:  Shared memory map error\n");
+        if (!arguments.silent) fprintf(stderr, "ERROR:  Shared memory map error\n");
         exit(1);
     }
     arguments.Schedule = &ptr->config;
-    argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
-    // dbgprint(stderr,">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
+    // if (arguments.debug) fprintf(stderr,">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
 
     if (arguments.mode < -2) 
     {

@@ -31,9 +31,11 @@ byte 13 : Status byte
 | 11        | Temperature Target    | 30        | 85        |
 | 12        | Fan Speed Override    | 10 *\*\** | 100       |
 | 13        | Status of Request     | 0         | 2         |  
+| 14        | Request Flags         | 0         | -- *\*\*\**|
 
-*\**    Hysteresis can be as high as 10 if the thresholds are 11 degrees apart  
-*\*\**  Fan Speed Override can be set by the daemon to 0 this is allowed
+*\**     Hysteresis can be as high as 10 if the thresholds are 11 degrees apart  
+*\*\**   Fan Speed Override can be set by the daemon to 0 this is allowed  
+*\*\*\** Undefined
 
 ---
 
@@ -78,4 +80,10 @@ The valid values of the control and status bytes are
 
 ## Types of requests
 
-Requests to change the set points.  
+The request flags are not currently used however are defined. The flags are
+
+- REQ_FLAG_MODE   0x01 : Request mode change
+- REQ_FLAG_CONF   0x02 : Request Config change
+- REQ_FLAG_CMD    0x04 : Request Command
+
+These flags are used to set what type of request is being set.  It is possible for a request to use multiple flags the default request is equal to all flags being set.  As of ver 0.3.0 request flags are ignored.

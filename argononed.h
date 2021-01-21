@@ -38,29 +38,27 @@ SOFTWARE.
 #define PI_PUD_OFF  0
 #define PI_PUD_DOWN 1
 #define PI_PUD_UP   2
-/*  OVERLAY VERSION 1 Data
-struct DTBO_Config_OLD {
-    uint8_t fanstages[3];
-    uint8_t thresholds[3];
-    uint8_t hysteresis;
-};
-*/
+
 struct DTBO_Config {
     uint8_t fanstages[3];
     uint8_t thresholds[3];
     uint8_t hysteresis;
 };
 
-#define REQ_WAIT 0       //Waiting for request 
-#define REQ_RDY  1       //Request is ready for processing
-#define REQ_PEND 2       //Request pending
-#define REQ_ERR  3       //Error in last Request
-#define REQ_SYNC 4       //Request Status to sync
-#define REQ_CLR  5       //Clear request
-#define REQ_RST  6       //Request Daemon to reset 
-#define REQ_HOLD 7       //Hold Requests
-#define REQ_OFF  8       //Request Daemon to shutdown
-#define REQ_SIG  9       //Request Commit Signal
+#define REQ_WAIT 0              // Waiting for request 
+#define REQ_RDY  1              // Request is ready for processing
+#define REQ_PEND 2              // Request pending
+#define REQ_ERR  3              // Error in last Request
+#define REQ_SYNC 4              // Request Status to sync
+#define REQ_CLR  5              // Clear request
+#define REQ_RST  6              // Request Daemon to reset 
+#define REQ_HOLD 7              // Hold Requests
+#define REQ_OFF  8              // Request Daemon to shutdown
+#define REQ_SIG  9              // Request Commit Signal
+
+#define REQ_FLAG_MODE   0x01    // Request mode change
+#define REQ_FLAG_CONF   0x02    // Request Config change
+#define REQ_FLAG_CMD    0x04    // Request Command
 
 struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanspeed;           //      WO  |   RO
@@ -69,8 +67,9 @@ struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanmode;            //      RW  |   RW
     uint8_t temperature_target; //      RW  |   RW
     uint8_t fanspeed_Overide;   //      RO  |   RW
-    uint8_t status;             //      WO  |   RO
-}; // current size - 13 bytes
+    uint8_t status;             //      RW  |   RW
+    uint8_t req_flags;          //      RW  |   WO
+}; // current size - 14 bytes
 
 void TMR_Get_temp(size_t timer_id, void *user_data);
 void Set_FanSpeed(uint8_t fan_speed);

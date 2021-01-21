@@ -50,7 +50,7 @@ SOFTWARE.
 
 #define VERSION "0.3.0"
 #ifndef LOG_LEVEL
-#define LOG_LEVEL 6
+#define LOG_LEVEL 5
 #endif
 
 char* PI_PUD_STR[3] = {"OFF", "DOWN", "UP"};

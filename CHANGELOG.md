@@ -8,6 +8,8 @@
 * Implemented shared memory requests without using signals
 * Fix formatting errors in markdown files
 * PATCH for Argon Artik Fan hat stop fan on shutdown
+* Fix argonone-cli respect verbose and silent options
+* Change default LOGLEVEL to 5 LOG_INFO
 
 0.2.2
 

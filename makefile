@@ -15,7 +15,7 @@ BINAME3 = argonone-cli
 OVERLAY = argonone.dtbo
 GCCVER  = $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 10)
 USERID	= $(shell id -u)
-LOGLEVEL = 6
+LOGLEVEL = 5
 
 -include makefile.conf
 ifndef BOOTLOC
@@ -103,7 +103,7 @@ install-daemon:
 .PHONY: install-cli
 install-cli:
 	@echo -n "Installing CLI "
-	@$(INSTALL) -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 0755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 ifeq ($(AUTOCOMP), 1)
 	@echo -n "Installing CLI autocomplete for bash "
 	@$(INSTALL) -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }

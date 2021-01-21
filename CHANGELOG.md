@@ -6,7 +6,8 @@
 * Fix leak of File in log_message
 * Improved commenting
 * Implemented shared memory requests without using signals
-* Fix formating errors in markdown files
+* Fix formatting errors in markdown files
+* PATCH for Argon Artik Fan hat stop fan on shutdown
 
 0.2.2
 

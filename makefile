@@ -103,7 +103,7 @@ install-daemon:
 .PHONY: install-cli
 install-cli:
 	@echo -n "Installing CLI "
-	@$(INSTALL) -m 0755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 ifeq ($(AUTOCOMP), 1)
 	@echo -n "Installing CLI autocomplete for bash "
 	@$(INSTALL) -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }

@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Should have the sticky bit set // No longer needs sticky bit
+// This is a test program only //
+// Should have the sticky bit set //
 
 
 #include <stdio.h>
@@ -50,21 +51,10 @@ SOFTWARE.
 #include <argp.h>
 #include "argononed.h"
 
-char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
-char* STATUS_STR[11] = {"Waiting for request",
-    "Request is ready for processing",
-    "Request pending",
-    "Error in last Request",
-    "Request Status to sync",
-    "Clear request",
-    "Request Daemon to reset",
-    "Hold Requests",
-    "Request Daemon to shutdown",
-    "Request Commit Signal",
-    "Unknown"
-    };
 
-const char *argp_program_version = "argonone-cli version 0.2.0";
+char* RUN_STATE_STR[4] = {"AUTO", "OFF", "MANUAL", "COOLDOWN"};
+
+const char *argp_program_version = "argonone-cli version 0.1.0";
 const char *argp_program_bug_address =
 	"<gitlab.com/darkelvenangel/argononed.git>";
 
@@ -77,31 +67,30 @@ static char args_doc[] = "";
 
 /* The options we understand. */
 static struct argp_option options[] = {
-  {0 ,0 ,0, 0, ">> Fan Control modes <<", 1},
-  {"cooldown", 'c', "Temp", 0,  "Set to Cool Down Mode", 1},
-  {"manual",   'm', 0,      0,  "Set to Manual Mode", 1},
-  {"fan",      'f', "SPEED",0,  "Set Fan speed", 1},
-  {0 ,0 ,0, 0, ">> Monitoring Controls <<",2},
-  {"off",      'o', 0,      0,  "Turn temperature monitoring off",2},
-  {"auto",     'a', 0,      0,  "Set to Automatic Mode",2},
-  {0, 0, 0, 0,  ">> Schedule Operations <<",3},
-  {"fan0", 3, "VALUE",0, "Set Fan1 value",3},
-  {"fan1", 4, "VALUE",0, "Set Fan2 value",3},
-  {"fan2", 5, "VALUE",0, "Set Fan3 value",3},
-  {"temp0", 6, "VALUE",0, "Set Temperature1 value",3},
-  {"temp1", 7, "VALUE",0, "Set Temperature2 value",3},
-  {"temp2", 8, "VALUE",0, "Set Temperature3 value",3},
-  {"hysteresis", 9, "VALUE",0,  "Set Hysteresis",3},
-  {0, 0, 0, 0, "",4},
-  {"commit",    1,  0,      0,  "Commit changes",4},
-  {"reload",   'r', 0,      OPTION_ALIAS,"",4},
-  {"reset",    'R', 0,      0,  "Reset Shared Memory",4},
+  {0 ,0 ,0, 0, ">> Fan Control modes <<"},
+  {"cooldown", 'c', "Temp", 0,  "Set to Cool Down Mode" },
+  {"manual",   'm', 0,      0,  "Set to Manual Mode"},
+  {"fan",      'f', "SPEED",0,  "Set Fan speed"},
+  {0 ,0 ,0, 0, ">> Monitoring Controls <<"},
+  {"off",      'o', 0,      0,  "Turn temperature monitoring off"},
+  {"auto",     'a', 0,      0,  "Set to Automatic Mode"},
+  {0, 0, 0, 0,  ">> Schedule Operations <<"},
+  {"fan0", 3, "VALUE",0, "Set Fan1 value"},
+  {"fan1", 4, "VALUE",0, "Set Fan2 value"},
+  {"fan2", 5, "VALUE",0, "Set Fan3 value"},
+  {"temp0", 6, "VALUE",0, "Set Temperature1 value"},
+  {"temp1", 7, "VALUE",0, "Set Temperature2 value"},
+  {"temp2", 8, "VALUE",0, "Set Temperature3 value"},
+  {"hysteresis", 9, "VALUE",0,  "Set Hysteresis"},
+  {0, 0, 0, 0, ""},
+  {"commit",    1,  0,      0,  "Commit changes"},
+  {"reload",   'r', 0,      OPTION_ALIAS},
   //{"load",     'l', "FILE", 0,  "Load New Schedule "},
-  {0, 0, 0, 0, ">> Output Options <<" ,5},
-  {"decode",   'd', 0,      0,  "Decode contents of Shared Memory",5},
-  {"verbose",  'v', 0,      0,  "Produce verbose output" ,5},
-  {"quiet",    'q', 0,      0,  "Don't produce any output" ,5},
-  {"silent",   's', 0,      OPTION_ALIAS ,"",5},
+  {0, 0, 0, 0, ">> Output Options <<" },
+  {"decode",   'd', 0,      0,  "Decode contents of Shared Memory"},
+  {"verbose",  'v', 0,      0,  "Produce verbose output" },
+  {"quiet",    'q', 0,      0,  "Don't produce any output" },
+  {"silent",   's', 0,      OPTION_ALIAS },
   { 0 }
 };
 
@@ -109,7 +98,7 @@ static struct argp_option options[] = {
 struct arguments
 {
   char *args;
-  int silent, verbose, reload, reset, debug;
+  int silent, verbose, reload;
   int mode;
   int fanoverride;
   int targettemp; 
@@ -133,7 +122,6 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       break;
     case 'r': case 1:
       arguments->reload = 1;
-      break; 
     case ARGP_KEY_ARG:
       if (state->arg_num >= 1)
       {
@@ -199,9 +187,6 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       arguments->fanoverride = fanspeed;
       break;
     }
-    case 'R':
-      arguments->reset = 1;
-      break;
     case 3:
       if (mode_switch != -1 && mode_switch != 4)
       {
@@ -280,179 +265,77 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case ARGP_KEY_END:
-      /* if (state->arg_num == 0) //  Not enough arguments.
-      {
-          argp_usage (state);
-      } */
+      //if (state->arg_num < 1)
+        /* Not enough arguments. */
+      //  argp_usage (state);
       break;
 
     default:
       return ARGP_ERR_UNKNOWN;
     }
-    arguments->mode = mode_switch;
+  arguments->mode = mode_switch;
 	return 0;
 }
 
 /* Our argp parser. */
-static struct argp argp = { options, parse_opt, args_doc, doc, 0, 0, 0 };
+static struct argp argp = { options, parse_opt, args_doc, doc };
+
 /// ====================================================================
 
 struct arguments arguments = {0};
 
-/**
- * Send Request and wait for reply
- * 
- * \param ptr Pointer to share memory data
- * \param pid PID of the daemon
- * \return 0 on success
- */
-int Send_Request(struct SHM_Data* ptr, int pid)
-{
-    if (pid != 0)
-    {
-      if (arguments.debug) fprintf(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
-      if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Send HANGUP Signal to PID %d\n", pid);
-      return kill(pid, 1);
-    }
-    uint8_t last_state = 0;
-    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
-    if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
-    if (ptr->status != REQ_WAIT) 
-    {
-        if (!arguments.silent) fprintf (stderr, "WARNING:  argononed isn't ready retry");
-        return 1;
-    }
-    ptr->status = REQ_RDY;
-    for(;ptr->status != REQ_WAIT;) 
-    {
-        if (last_state != ptr->status)
-        {
-            if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
-            if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
-            last_state = ptr->status;
-            if (ptr->status == REQ_ERR)
-            {
-                if (!arguments.silent) fprintf (stderr, "ERROR:  The was an error in your request\n");
-                return -1;
-            }
-        }
-        msync(ptr,13,MS_SYNC);
-    } 
-    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
-    if (arguments.verbose && !arguments.debug) fprintf (stderr, "INFO:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
-    ptr->status = REQ_CLR;
-   return 0;
-}
 
-/**
- * Send Reset Request and wait for reply
- * 
- * \param ptr Pointer to share memory data
- * \param pid PID of the daemon
- * \return 0 on success
- */
-int Send_Reset(struct SHM_Data* ptr, int pid)
-{
-    if (pid != 0)
-    {
-      if (arguments.debug) fprintf(stderr, "DEBUG:  Send HANGUP Signal to PID %d\n", pid);
-      return kill(pid, 1);
-    }
-    uint8_t last_state = 0;
-    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
-    if (ptr->status != REQ_WAIT) 
-    {
-        if (!arguments.silent) fprintf (stderr, "WARNING:  argononed isn't ready retry");
-        return 1;
-    }
-    ptr->status = REQ_CLR;
-    for(;ptr->status != REQ_WAIT;) 
-    {
-        if (last_state != ptr->status)
-        {
-            if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
-            last_state = ptr->status;
-            if (ptr->status == REQ_ERR)
-            {
-                fprintf (stderr, "ERROR:  The was an error in your request\n");
-                return -1;
-            }
-        }
-        msync(ptr,13,MS_SYNC);
-    } 
-    if (arguments.debug) fprintf (stderr, "DEBUG:  Status  %02x:%s\n",ptr->status, ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");// < 10 ? STATUS_STR[*status] : "Unknown");
-   return 0;
-}
 int main (int argc, char** argv)
 {
     // if (getuid() != 0) {
     //     fprintf(stderr, "ERROR: Permissions error, must be run as root\n");
     //     exit(1);
     // }
-    if (argc == 1 )
-    {
-      fprintf(stderr, "Usage: argonone-cli [OPTION...]\nTry `argonone-cli --help' or `argonone-cli --usage' for more information.\n");
-      exit (1);
-    }
-    #if LOG_LEVEL == 6
-    arguments.debug = 1;
-    #endif
-    argp_parse (&argp, argc, argv, 0, 0, &arguments);
     FILE* file = fopen (LOCK_FILE, "r");
-    int main_ret = 0;
-    int d_pid = 0;
     if (file == NULL)
     {
         if (errno == 2)
         {
-          if (!arguments.silent) fprintf(stderr, "ERROR:  argononed is not running.\n");
+          fprintf(stderr, "ERROR:  argononed is not running.\n");
           exit (1);
         }
-        if (errno == 13)
-        {
-          if (!arguments.silent) fprintf(stderr,"INFO:  Running under normal user some features may not work.\n");
-        } else {
-          if (!arguments.silent) fprintf(stderr,"ERROR:  Couldn't open %s [ %s ]\n",LOCK_FILE, strerror(errno));
-          exit(1);
-        }
-    } else {
-      fscanf (file, "%d", &d_pid);
-      fclose (file);
-      if (kill(d_pid, 0) != 0)
-      {
-          if (!arguments.silent) fprintf(stderr, "ERROR:  argononed is not running.\n");
-          exit (1);
-      }
+        fprintf(stderr,"ERROR:  Couldn't open %s [ %s ]\n",LOCK_FILE, strerror(errno));
+        exit(1);
     }
+    int d_pid = 0;
+    fscanf (file, "%d", &d_pid);
+    fclose (file);
+    if (kill(d_pid, 0) != 0)
+    {
+        fprintf(stderr, "ERROR:  argononed is not running.\n");
+        exit (1);
+    }
+    
     struct SHM_Data* ptr;
     int shm_fd =  shm_open(SHM_FILE, O_RDWR, 0664);
     ftruncate(shm_fd, SHM_SIZE);
-    ptr = mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    ptr = mmap(0, SHM_SIZE, PROT_READ| PROT_WRITE, MAP_SHARED, shm_fd, 0);
     if (ptr == MAP_FAILED) {
-        if (!arguments.silent) fprintf(stderr, "ERROR:  Shared memory map error\n");
+        fprintf(stderr, "ERROR:  Shared memory map error\n");
         exit(1);
     }
     arguments.Schedule = &ptr->config;
-
-    // if (arguments.debug) fprintf(stderr,">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
-
+    argp_parse (&argp, argc, argv, 0, 0, &arguments);
+#ifdef DEBUG
+    printf(">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
+#endif
     if (arguments.mode < -2) 
     {
 
 
     } else {
-        if (arguments.reset)
-        {
-            Send_Reset(ptr, 0);
-        }
         if (arguments.mode > -1 && arguments.mode < 4)
         {
             ptr->fanmode = arguments.mode;
             ptr->temperature_target = arguments.targettemp;
             if (arguments.mode == 3 && arguments.fanoverride == 0) arguments.fanoverride = 10;
             ptr->fanspeed_Overide = arguments.fanoverride;
-            // kill(d_pid, 1); // Send update message
-            if (Send_Request(ptr, d_pid) != 0) main_ret = 1;
+            kill(d_pid, 1); // Send update message
         }
         if (arguments.mode == 4)
         {
@@ -460,15 +343,7 @@ int main (int argc, char** argv)
             ptr->temperature_target = 0;
             ptr->fanspeed_Overide = 0;
 
-            if (arguments.reload) 
-            {
-              if (Send_Request(ptr, d_pid) != 0) main_ret = 1;
-              // kill(d_pid, 1); // Send update message
-            }
-        }
-        if (arguments.mode == -1 && arguments.reload)
-        {
-            if (Send_Request(ptr, d_pid) != 0) main_ret = 1;
+            if (arguments.reload) kill(d_pid, 1); // Send update message
         }
         if (arguments.mode == 5)
         {
@@ -481,9 +356,8 @@ int main (int argc, char** argv)
           printf("Fan Mode [ %s ] \n", RUN_STATE_STR[ptr->fanmode]);
           printf("Fan Speed Override %d%% \n", ptr->fanspeed_Overide);
           printf("Target Temperature %d° \n", ptr->temperature_target);
-          printf("Daemon Status : %s\n", ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
         }
     }
     close(shm_fd);
-    return main_ret;
+    return 0;
 }

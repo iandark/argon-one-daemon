@@ -4,7 +4,7 @@ A replacement daemon for the Argon One Raspberry Pi cases, and the Argon Artik F
 
 ## How To Install
 
-I've tried to make the installer as simple as possible. After cloning this repo simply run ```./configure && make all && sudo make install``` You may need to reboot for full functionality.
+I've tried to make the installer as simple as possible. After cloning this repo simply run ```./install``` You may need to reboot for full functionality.
 
 ## Configuration
 
@@ -40,13 +40,10 @@ The log levels go in this order: FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG. A
 
 ## Upgrading to the latest version
 
-In order to upgrade to the latest version the current method is to pull the updates from gitlab and execute the following commands
+In order to upgrade to the latest version the current method is to pull the updates from gitlab and execute the following command
 
 ```text
-make mrproper
-./configure
-make
-sudo make install-daemon install-cli
+./install
 ```
 
 ## The Argon One CLI tool
@@ -91,5 +88,3 @@ argonone-cli --commit
 ```
 
 The changes don't have to made in one shot but you **MUST** commit them for them to take effect.
-
-***IMPORTANT*** *There is no feedback from the daemon if the changes are applied successfully.  You can check the logs.  This feature is planned but not yet implemented*

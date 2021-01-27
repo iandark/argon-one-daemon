@@ -10,6 +10,7 @@
 * PATCH for Argon Artik Fan hat stop fan on shutdown
 * Fix argonone-cli respect verbose and silent options
 * Change default LOGLEVEL to 5 LOG_INFO
+* Added new install script
 
 0.2.2
 

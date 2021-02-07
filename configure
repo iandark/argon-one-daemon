@@ -40,7 +40,7 @@ case $DISTRO in
     INITSYS="OPENRC"
     #BOOTLOC="/boot"
     ;;
-"manjaro-arm")
+"archarm" | "manjaro-arm")
     echo "OK"
     I2CHELPER=1
     ;;

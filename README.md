@@ -28,6 +28,7 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * RetroPi
 * Gentoo
 * Manjaro-arm
+* Arch Linux arm (ARMv7 installation ONLY)
 * Ubuntu
 
 If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system.

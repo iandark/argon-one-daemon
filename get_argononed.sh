@@ -1,6 +1,6 @@
 #!/bin/bash
 # Auto installer for argononed this will grab the latest version
-function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
+function version { echo "$@" | awk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 
 echo -e "\e[H\e[J" 
 echo -e "\e[37;1m    ___                                                __\e[0m"

@@ -55,6 +55,8 @@ esac
 
 
 echo "SYSTEM CHECK"
+echo -n "Checking for gpiomem : "
+[[ -a /dev/gpiomem ]] && { GPIOMEM=1 ; echo "OK";} || { GPIOMEM=0 ; echo "ERR";}
 echo -n "gcc : "
 command -v gcc &> /dev/null && GCC=1 || GCC=0
 [[ $GCC == 1 ]] && echo "OK" || echo "ERR"
@@ -68,11 +70,16 @@ echo -n "bash-autocomplete : "
 [[ -d /etc/bash_completion.d ]] && { AUTOC=1 ; echo "OK";} || { AUTOC=0 ; echo "NOT INSTALLED";}
 echo -n "I2C Bus check : "
 [[ -a /dev/i2c-1 ]] && { I2CBUS=1 ; echo "ENABLED";} || { I2CBUS=0 ; echo "NOT ENABLED";}
-if [[ $GCC -eq 1 && $DTC -eq 1 && $MAKE -eq 1 ]]
+if [[ $GCC -eq 1 && $DTC -eq 1 && $MAKE -eq 1 && $GPIOMEM -eq 1 ]]
 then
     echo "Dependency Check Successful" 
-else    
-    echo "Dependency Check Failed! Please install the missing tool(s)"
+else   
+    if [[ $GPIOMEM -eq 0 ]]
+    then
+        echo "Dependency Check Failed!  Your system kernel isn't compatible."
+    else
+        echo "Dependency Check Failed! Please install the missing tool(s)"
+    fi
     exit 1
 fi
 

@@ -1,5 +1,11 @@
 # Change Log
 
+0.3.1
+
+* Build system improved
+* Issue #5: Fix install files to correct locations
+* Expand documentation of Shared memory IPC Protocol
+
 0.3.0
 
 * Rewrite of monitor_device function

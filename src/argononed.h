@@ -45,6 +45,23 @@ struct DTBO_Config {
     uint8_t hysteresis;
 };
 
+struct SHM_DAEMON_STATS {
+    uint8_t max_temperature;
+    uint8_t min_temperature;
+    uint8_t EF_Warning;
+    uint8_t EF_Error;
+    uint8_t EF_Critical;
+};
+
+struct SHM_REQ_MSG {
+    uint8_t req_flags;
+    struct DTBO_Config Schedules;
+    uint8_t fanmode;
+    uint8_t temperature_target;
+    uint8_t fanspeed_Overide;
+    uint8_t status;
+};
+
 #define REQ_WAIT 0              // Waiting for request 
 #define REQ_RDY  1              // Request is ready for processing
 #define REQ_PEND 2              // Request pending
@@ -56,9 +73,10 @@ struct DTBO_Config {
 #define REQ_OFF  8              // Request Daemon to shutdown
 #define REQ_SIG  9              // Request Commit Signal
 
-#define REQ_FLAG_MODE   0x01    // Request mode change
+#define REQ_FLAG_MODE   0x01    // Request Mode change
 #define REQ_FLAG_CONF   0x02    // Request Config change
 #define REQ_FLAG_CMD    0x04    // Request Command
+#define REQ_FLAG_STAT   0x08    // Request Statistics Reset *REQ_CLR only 
 
 struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanspeed;           //      WO  |   RO
@@ -69,10 +87,9 @@ struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanspeed_Overide;   //      RO  |   RW
     uint8_t status;             //      RW  |   RW
     uint8_t req_flags;          //      RW  |   WO
+    struct SHM_DAEMON_STATS stat;
+    struct SHM_REQ_MSG msg; // Special Message for CLI client only
+    struct SHM_REQ_MSG msg_app[2]; // Normal Application Messages
 }; // current size - 14 bytes
-
-void TMR_Get_temp(size_t timer_id, void *user_data);
-void Set_FanSpeed(uint8_t fan_speed);
-int reload_config_from_shm();
 
 #endif

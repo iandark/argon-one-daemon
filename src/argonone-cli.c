@@ -482,6 +482,11 @@ int main (int argc, char** argv)
           printf("Fan Speed Override %d%% \n", ptr->fanspeed_Overide);
           printf("Target Temperature %d° \n", ptr->temperature_target);
           printf("Daemon Status : %s\n", ptr->status < 10 ? STATUS_STR[ptr->status] : "Unknown");
+          printf("Maximum Temperature : %d°\n", ptr->stat.max_temperature);
+          printf("Minimum Temperature : %d°\n", ptr->stat.min_temperature);
+          printf("Daemon Warnings : %d\n", ptr->stat.EF_Warning);
+          printf("Daemon Errors : %d\n", ptr->stat.EF_Error);
+          printf("Daemon Critical Errors : %d\n", ptr->stat.EF_Critical);
         }
     }
     close(shm_fd);

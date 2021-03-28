@@ -48,7 +48,7 @@ SOFTWARE.
 #include "identapi.h"
 #include "argononed.h"
 
-#define VERSION "0.3.0"
+#define VERSION "0.3.1"
 #ifndef LOG_LEVEL
 #define LOG_LEVEL 5
 #endif
@@ -62,7 +62,7 @@ uint8_t threshold[4] = { 55, 60, 65, 0 };
 uint8_t hysteresis = 3;
 uint32_t *gpioReg = MAP_FAILED;
 int  runstate = 0;
-struct SHM_Data* ptr;
+struct SHM_Data* ptr = NULL;
 typedef enum {
     LOG_NONE = 0,
     LOG_FATAL,
@@ -72,6 +72,11 @@ typedef enum {
     LOG_INFO,
     LOG_DEBUG,
 } Log_Level;
+
+
+void TMR_Get_temp(size_t timer_id, void *user_data);
+void Set_FanSpeed(uint8_t fan_speed);
+int reload_config_from_shm();
 
 /**
  * Write formatted output to Log file.
@@ -84,6 +89,12 @@ void log_message(Log_Level level, const char *message, ...)
 {
     FILE *logfile;
     va_list args;
+    if (ptr && (level <= LOG_WARN))
+    {
+        if (level == LOG_WARN) ptr->stat.EF_Warning++;
+        if (level == LOG_ERROR) ptr->stat.EF_Error++;
+        if (level == LOG_CRITICAL) ptr->stat.EF_Critical ++;
+    }
     logfile = fopen(LOG_FILE,"a");
     if(!logfile) return;
     if (level <= LOG_LEVEL )
@@ -438,6 +449,8 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
             break;
         }
         ptr->temperature = CPU_Temp;
+        if (CPU_Temp > ptr->stat.max_temperature) ptr->stat.max_temperature = CPU_Temp;
+        if ( (ptr->stat.min_temperature == 0) || (CPU_Temp < ptr->stat.min_temperature)) ptr->stat.min_temperature = CPU_Temp;
     } else {
         close(fdtemp);
         log_message(LOG_INFO, "Successfully closed temperature sensor");
@@ -453,6 +466,7 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
  */
 int32_t monitor_device(uint32_t *Pulse_Time_ms)
 {
+    static int32_t E_Flag = 0;
 	struct gpioevent_request req;
 	int fd;
 	int ret = 0;
@@ -469,10 +483,19 @@ int32_t monitor_device(uint32_t *Pulse_Time_ms)
 	strcpy(req.consumer_label, "argonone-powerbutton");
 	ret = ioctl(fd, GPIO_GET_LINEEVENT_IOCTL, &req);
 	if (ret == -1) {
-        log_message(LOG_CRITICAL, "Unable to get GPIO Line Event : %s", strerror(errno));
+        if (E_Flag == 0)
+        {
+            log_message(LOG_CRITICAL, "Unable to get GPIO Line Event : %s", strerror(errno));
+            E_Flag = errno;
+        }
 		ret = errno;
 		goto exit_close_error;
 	}
+    if (E_Flag == 0)
+    {
+        log_message(LOG_INFO, "GPIO Line Event Cleared ");
+        E_Flag = 0;
+    }
 	log_message(LOG_INFO, "Monitoring line 4 on /dev/gpiochip0");
     uint32_t Rtime = 0;
 	while (1) {

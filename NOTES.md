@@ -87,3 +87,7 @@ The request flags are not currently used however are defined. The flags are
 - REQ_FLAG_CMD    0x04 : Request Command
 
 These flags are used to set what type of request is being set.  It is possible for a request to use multiple flags the default request is equal to all flags being set.  As of ver 0.3.0 request flags are ignored.
+
+## New changes to Shared Memory
+
+Shared memory IPC has been expanded beyond the above mentioned limits and the interface is improving and expanding. New fields are being added to facilitate proper message areas better, daemon status reporting, and statistical tracking.

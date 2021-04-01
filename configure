@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 [[ -a makefile.conf ]] && { echo -e "\e[31mERROR\e[0;1m:  makefile.conf already exists. run make mrproper first!\e[0m"; exit 1;}
-
+[[ -d build ]] || mkdir build
 echo -e "\e[1;37mARGON ONE DAEMON CONFIGURING ...\e[0m"
 if [[ -n $TARGET_DISTRO ]]
 then

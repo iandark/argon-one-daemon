@@ -1,6 +1,6 @@
-SERVICE_FILE=OS/$(DISTRO)/argononed
+SERVICE_FILE=OS/gentoo/argononed
 SERVICE_FILE_PERMISSIONS=744
-SERVICE_PATH=/etc/initd/argononed
+SERVICE_PATH=/etc/init.d/argononed
 SHUTDOWN_FILE=$(BINAME2)
 SHUTDOWN_PATH=/usr/sbin/shutdown_argonone
 SERVICE_ENABLE=rc-update add

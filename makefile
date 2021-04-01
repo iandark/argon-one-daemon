@@ -39,32 +39,28 @@ ifeq ($(GCCVER), 1)
 endif
 
 -include OS/_common/$(INITSYS).in
-# ifeq ($(INITSYS), SYSTEMD)
-# 	SERVICE_FILE=OS/_common/argononed.service
-# 	SERVICE_FILE_PERMISSIONS=644
-# 	SERVICE_PATH=/etc/systemd/system/argononed.service
-# 	SHUTDOWN_FILE=build/$(BINAME2)
-# 	SHUTDOWN_PATH=/lib/systemd/system-shutdown/argonone-shutdown
-# 	SERVICE_ENABLE=systemctl enable
-# 	SERVICE_DISABLE=systemctl disable
-# 	SERVICE_START=systemctl start argononed
-# 	SERVICE_STOP=systemctl stop argononed
-# endif
-
 -include OS/$(DISTRO)/makefile.in
 
-ifndef SERVICE_FILE
-$(error makefile configuration error!)
+ifndef CONFIGURED
+ifeq (,$(wildcard makefile.conf))
+$(warning Configuration missing or not correct)
+endif
 endif
 
 ifeq (install,$(findstring install, $(MAKECMDGOALS)))
 ifneq ($(USERID), 0)
 $(error "(Un)Installing requires elevated privileges")
 endif
+ifeq ($(PACKAGESYS),ENABLED)
+$(error "(Un)Installing Not supported with Package System")
+endif
 endif
 ifeq (update,$(findstring update, $(MAKECMDGOALS)))
 ifneq ($(USERID), 0)
 $(error "Updating requires elevated privileges")
+endif
+ifeq ($(PACKAGESYS),ENABLED)
+$(error "Updating Not supported with Package System")
 endif
 endif
 
@@ -113,7 +109,7 @@ install-daemon:
 	@echo -n "Installing daemon "
 	@$(INSTALL) build/$(BINAME1) /usr/sbin/$(BINAME1) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 ifeq ($(LOGROTATE),1)
-	@$(INSTALL) -m 600 argononed.logrotate /etc/logrotate.d/argononed
+	@$(INSTALL) -m 600 OS/_common/argononed.logrotate /etc/logrotate.d/argononed
 endif
 
 .PHONY: install-cli
@@ -122,7 +118,7 @@ install-cli:
 	@$(INSTALL) -m 0755 build/$(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 ifeq ($(AUTOCOMP), 1)
 	@echo -n "Installing CLI autocomplete for bash "
-	@$(INSTALL) -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argonone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 755 OS/_common/argonone-cli-complete.bash /etc/bash_completion.d/argonone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 endif
 
 .PHONY: install-overlay
@@ -164,6 +160,7 @@ ifeq ($(shell if [ -f /usr/bin/argononed ]; then echo 1; fi), 1)
 	@$(RM) /usr/bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
 endif
 	@echo "Update Complete"
+
 .PHONY: uninstall
 uninstall:
 	@echo -n "Stop Service ... "
@@ -208,3 +205,7 @@ clean:
 .PHONY: mrproper
 mrproper: clean
 	-@$(RM) makefile.conf 2>/dev/null || true
+
+.PHONY: dumpvars
+dumpvars:
+	@$(foreach V,$(sort $(.VARIABLES)), $(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))

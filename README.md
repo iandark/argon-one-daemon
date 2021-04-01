@@ -30,8 +30,12 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * Manjaro-arm
 * Arch Linux arm (ARMv7 installation ONLY)
 * Ubuntu
+* Lakka *\**
+* LibreElec *\**
 
 If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system.
+
+*\** *Support for this OS is with the self extracting package system. SEE BELOW*
 
 ## Logging Options
 
@@ -89,3 +93,43 @@ argonone-cli --commit
 ```
 
 The changes don't have to made in one shot but you **MUST** commit them for them to take effect.
+
+## Package System
+
+This isn't a traditional package system for mainstream OS support this is meant to make an installer for an OS that otherwise isn't able to build the project locally.
+
+To generate a package you need to follow this procedure.
+
+```text
+make mrproper
+TARGET_DISTRO=<NAME OF DISTRO> ./package.sh
+```
+
+If successful the package will be in the build directory.
+
+### Screenshot of the packager
+
+```text
+    ___                                                __
+   /   |  _________ _____  ____  ____  ____  ___  ____/ /
+  / /| | / ___/ __ `/ __ \/ __ \/ __ \/ __ \/ _ \/ __  / 
+ / ___ |/ /  / /_/ / /_/ / / / / /_/ / / / /  __/ /_/ /  
+/_/  |_/_/   \__, /\____/_/ /_/\____/_/ /_/\___/\__,_/   
+            /____/                                       
+                                                PACKAGER 
+_________________________________________________________
+ARGON ONE DAEMON CONFIGURING ...
+Distro check [libreelec] : OK
+SYSTEM CHECK
+gcc : OK
+dtc : OK
+make : OK
+Dependency Check : Successful
+INFO:  Preparing build environment ... OK
+INFO:  Building Source Files ... OK
+INFO:  Checking files ... OK
+INFO:  Building Installer ... OK
+INFO:  Packing files ... OK
+INFO:  Verify package ... OK
+INFO:  Package build/libreelec.pkg.sh is complete 
+```

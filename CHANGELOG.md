@@ -3,6 +3,8 @@
 0.3.1
 
 * Build system improved
+* Support for Lakka and LibreElec
+* Self-extracting package system for systems without compiler
 * Issue #5: Fix install files to correct locations
 * Expand documentation of Shared memory IPC Protocol
 

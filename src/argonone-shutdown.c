@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     if (strstr(" poweroff halt ", argv[1]) != NULL) 
     {
         int file_i2c = 0;
-        char cmd_shutdown = 0xff;
+        char cmd_shutdown = 0x00;  // Turn off Fan 
         char *filename = (char*)"/dev/i2c-1";
         if ((file_i2c = open(filename, O_RDWR)) < 0)
         {
@@ -47,6 +47,11 @@ int main(int argc, char **argv)
         {
             return -1;
         }
+        if (write(file_i2c, &cmd_shutdown, 1) != 1)
+        {
+            return -1;
+        }
+        cmd_shutdown = 0xff;        // Shutdown Command
         if (write(file_i2c, &cmd_shutdown, 1) != 1)
         {
             return -1;

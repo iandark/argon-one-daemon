@@ -1,0 +1,9 @@
+SERVICE_FILE=OS/_common/argononed.service
+SERVICE_FILE_PERMISSIONS=644
+SERVICE_PATH=/etc/systemd/system/argononed.service
+SHUTDOWN_FILE=build/$(BINAME2)
+SHUTDOWN_PATH=/lib/systemd/system-shutdown/argonone-shutdown
+SERVICE_ENABLE=systemctl enable
+SERVICE_DISABLE=systemctl disable
+SERVICE_START=systemctl start argononed
+SERVICE_STOP=systemctl stop argononed

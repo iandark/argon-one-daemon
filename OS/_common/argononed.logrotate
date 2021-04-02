@@ -1,0 +1,10 @@
+/var/log/argononed.log
+{
+	rotate 2
+	daily
+	compress
+	delaycompress
+	missingok
+	notifempty
+	create 660 root root
+}

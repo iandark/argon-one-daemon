@@ -38,18 +38,45 @@ SOFTWARE.
 #define PI_PUD_OFF  0
 #define PI_PUD_DOWN 1
 #define PI_PUD_UP   2
-/*  OVERLAY VERSION 1 Data
-struct DTBO_Config_OLD {
-    uint8_t fanstages[3];
-    uint8_t thresholds[3];
-    uint8_t hysteresis;
-};
-*/
+
 struct DTBO_Config {
     uint8_t fanstages[3];
     uint8_t thresholds[3];
     uint8_t hysteresis;
 };
+
+struct SHM_DAEMON_STATS {
+    uint8_t max_temperature;
+    uint8_t min_temperature;
+    uint8_t EF_Warning;
+    uint8_t EF_Error;
+    uint8_t EF_Critical;
+};
+
+struct SHM_REQ_MSG {
+    uint8_t req_flags;
+    struct DTBO_Config Schedules;
+    uint8_t fanmode;
+    uint8_t temperature_target;
+    uint8_t fanspeed_Overide;
+    uint8_t status;
+};
+
+#define REQ_WAIT 0              // Waiting for request 
+#define REQ_RDY  1              // Request is ready for processing
+#define REQ_PEND 2              // Request pending
+#define REQ_ERR  3              // Error in last Request
+#define REQ_SYNC 4              // Request Status to sync
+#define REQ_CLR  5              // Clear request
+#define REQ_RST  6              // Request Daemon to reset 
+#define REQ_HOLD 7              // Hold Requests
+#define REQ_OFF  8              // Request Daemon to shutdown
+#define REQ_SIG  9              // Request Commit Signal
+
+#define REQ_FLAG_MODE   0x01    // Request Mode change
+#define REQ_FLAG_CONF   0x02    // Request Config change
+#define REQ_FLAG_CMD    0x04    // Request Command
+#define REQ_FLAG_STAT   0x08    // Request Statistics Reset *REQ_CLR only 
 
 struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanspeed;           //      WO  |   RO
@@ -58,11 +85,11 @@ struct SHM_Data {               //  DAEMON  |   CLIENT
     uint8_t fanmode;            //      RW  |   RW
     uint8_t temperature_target; //      RW  |   RW
     uint8_t fanspeed_Overide;   //      RO  |   RW
-    uint8_t status;             //      WO  |   RO
-}; // current size - 13 bytes
-
-void TMR_Get_temp(size_t timer_id, void *user_data);
-void Set_FanSpeed(uint8_t fan_speed);
-void reload_config_from_shm();
+    uint8_t status;             //      RW  |   RW
+    uint8_t req_flags;          //      RW  |   WO
+    struct SHM_DAEMON_STATS stat;
+    struct SHM_REQ_MSG msg; // Special Message for CLI client only
+    struct SHM_REQ_MSG msg_app[2]; // Normal Application Messages **Not Yet Enabled**
+}; // current size - 14 bytes
 
 #endif

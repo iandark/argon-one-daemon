@@ -1,0 +1,7 @@
+OS/libreelec/pkg_list
+build/argononed
+build/argonone-cli
+build/argonone-shutdown
+build/argonone.dtbo
+OS/_common/argononed.service
+OS/_common/setup-overlay.sh

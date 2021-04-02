@@ -8,14 +8,14 @@ BASH	= bash
 INSTALL = install
 CFLAGS  = -Wall -s -O3
 LFLAGS  = -lpthread -lrt
-OBJ     = argononed.o event_timer.o
+OBJ     = build/argononed.o build/event_timer.o
 BINAME1 = argononed
 BINAME2 = argonone-shutdown
 BINAME3 = argonone-cli
 OVERLAY = argonone.dtbo
 GCCVER  = $(shell expr `gcc -dumpversion | cut -f1 -d.` \>= 10)
 USERID	= $(shell id -u)
-LOGLEVEL = 6
+LOGLEVEL = 5
 
 -include makefile.conf
 ifndef BOOTLOC
@@ -30,54 +30,63 @@ endif
 ifndef AUTOCOMP
 AUTOCOMP = 0
 endif
+ifndef LOGROTATE
+LOGROTATE = 0
+endif
 
 ifeq ($(GCCVER), 1)
 	CFLAGs  += -fanalyzer
 endif
 
-ifeq ($(INITSYS), SYSTEMD)
-	SERVICE_FILE=argononed.service
-	SERVICE_FILE_PERMISSIONS=644
-	SERVICE_PATH=/etc/systemd/system/argononed.service
-	SHUTDOWN_FILE=$(BINAME2)
-	SHUTDOWN_PATH=/lib/systemd/system-shutdown/argonone-shutdown
-	SERVICE_ENABLE=systemctl enable
-	SERVICE_DISABLE=systemctl disable
-	SERVICE_START=systemctl start argononed
-	SERVICE_STOP=systemctl stop argononed
-endif
+-include OS/_common/$(INITSYS).in
 -include OS/$(DISTRO)/makefile.in
-ifndef SERVICE_FILE
-$(error makefile configuration error!)
+
+ifndef CONFIGURED
+ifeq (,$(wildcard makefile.conf))
+$(warning Configuration missing or not correct)
+endif
 endif
 
 ifeq (install,$(findstring install, $(MAKECMDGOALS)))
 ifneq ($(USERID), 0)
 $(error "(Un)Installing requires elevated privileges")
 endif
+ifeq ($(PACKAGESYS),ENABLED)
+$(error "(Un)Installing Not supported with Package System")
+endif
+endif
+ifeq (update,$(findstring update, $(MAKECMDGOALS)))
+ifneq ($(USERID), 0)
+$(error "Updating requires elevated privileges")
+endif
+ifeq ($(PACKAGESYS),ENABLED)
+$(error "Updating Not supported with Package System")
+endif
 endif
 
 .DEFAULT_GOAL := all
 
-%.o: %.c
+
+
+build/%.o: src/%.c
 	@echo "Compile $<"
 	$(CC) -c -o $@ $< $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) 
 
 $(BINAME1): $(OBJ)
 	@echo "Build $(BINAME1)"
-	$(CC) -o $(BINAME1) $^ $(CFLAGS) $(LFLAGS)
+	$(CC) -o build/$(BINAME1) $^ $(CFLAGS) $(LFLAGS)
 
-$(BINAME2): argonone-shutdown.c
+$(BINAME2): src/argonone-shutdown.c
 	@echo "Build $(BINAME2)"
-	$(CC) -o $(BINAME2) $^ $(CFLAGS)
+	$(CC) -o build/$(BINAME2) $^ $(CFLAGS)
 
-$(BINAME3): argonone-cli.c
+$(BINAME3): src/argonone-cli.c
 	@echo "Build $(BINAME3)"
-	$(CC) -o $(BINAME3) $^ $(CFLAGS) -lrt
+	$(CC) -o build/$(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) -lrt
 
-$(OVERLAY): argonone.dts
+$(OVERLAY): src/argonone.dts
 	@echo "Build $@"
-	$(DTC) $@ $<
+	$(DTC) build/$@ $<
 
 .PHONY: overlay
 overlay: $(OVERLAY)
@@ -98,22 +107,25 @@ all: daemon cli overlay
 .PHONY: install-daemon
 install-daemon:
 	@echo -n "Installing daemon "
-	@$(INSTALL) $(BINAME1) /usr/bin/$(BINAME1) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) build/$(BINAME1) /usr/sbin/$(BINAME1) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+ifeq ($(LOGROTATE),1)
+	@$(INSTALL) -m 600 OS/_common/argononed.logrotate /etc/logrotate.d/argononed
+endif
 
 .PHONY: install-cli
 install-cli:
 	@echo -n "Installing CLI "
-	@$(INSTALL) -m 4755 $(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 0755 build/$(BINAME3) /usr/bin/$(BINAME3) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 ifeq ($(AUTOCOMP), 1)
 	@echo -n "Installing CLI autocomplete for bash "
-	@$(INSTALL) -m 755 argonone-cli-complete.bash /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(INSTALL) -m 755 OS/_common/argonone-cli-complete.bash /etc/bash_completion.d/argonone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 endif
 
 .PHONY: install-overlay
 install-overlay:
 	@echo -n "Installing overlay "
-	@$(INSTALL) argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
-	@$(BASH) setup-overlay.sh $(BOOTLOC)/config.txt
+	@$(INSTALL) build/argonone.dtbo $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
+	@$(BASH) OS/_common/setup-overlay.sh $(BOOTLOC)/config.txt
 
 
 .PHONY: install-service
@@ -132,9 +144,22 @@ endif
 	@echo -n "Starting Service "
 	@timeout 5s $(SERVICE_START) &>/dev/null && echo "Successful" || { ( [ $$? -eq 124 ] && echo "Timeout" || echo "Failed" ) }
 
+
 .PHONY: install
 install:: install-daemon install-cli install-service install-overlay
+ifeq ($(shell if [ -f /usr/bin/argononed ]; then echo 1; fi), 1)
+	@echo -n "Removing old daemon ... "
+	@$(RM) /usr/bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
+endif
 	@echo "Install Complete"
+
+.PHONY: update
+update:: install-daemon install-cli install-service
+ifeq ($(shell if [ -f /usr/bin/argononed ]; then echo 1; fi), 1)
+	@echo -n "Removing old daemon ... "
+	@$(RM) /usr/bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
+endif
+	@echo "Update Complete"
 
 .PHONY: uninstall
 uninstall:
@@ -148,7 +173,7 @@ ifeq ($(INITSYS), OPENRC)
 	@echo -n "Erase Shutdown Service ... "
 	@$(RM) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo -n "Erase argonone-shutdown ... "
-	@$(RM) /usr/bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@$(RM) /usr/*bin/shutdown_argonone 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 else
 	@echo -n "Erase argonone-shutdown ... "
 	@$(RM) $(SHUTDOWN_PATH) 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
@@ -156,13 +181,15 @@ endif
 	@echo -n "Remove overlay ... "
 	@$(RM) $(BOOTLOC)/overlays/argonone.dtbo 2>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Remove daemon ... "
-	@$(RM) /usr/bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
+	@$(RM) /usr/*bin/argononed 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
 	@echo -n "Remove cli-tool ... "
 	@$(RM) /usr/bin/argonone-cli 2>/dev/null&& echo "Successful" || { echo "Failed"; true; }
 	@echo -n "Remove autocomplete for cli ... "
-	$(RM) /etc/bash_completion.d/argoneone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	$(RM) /etc/bash_completion.d/argonone-cli 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@echo -n "Remove logrotate config ... "
+	$(RM) /etc/logrotate.d/argononed 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
 	@echo "Remove dtoverlay=argonone from $(BOOTLOC)/config.txt"
-	@cp $(BOOTLOC)/config.txt $(BOOTLOC)/config.argoneone.backup
+	@cp $(BOOTLOC)/config.txt $(BOOTLOC)/config.argonone.backup
 	@sed -i '/dtoverlay=argonone/d' $(BOOTLOC)/config.txt
 	@echo "Uninstall Complete"
 
@@ -173,7 +200,12 @@ clean:
 	-@$(RM) $(BINAME1) 2>/dev/null || true
 	-@$(RM) $(BINAME2) 2>/dev/null || true
 	-@$(RM) $(BINAME3) 2>/dev/null || true
+	-@$(RM) build/* 2>/dev/null || true
 
 .PHONY: mrproper
 mrproper: clean
 	-@$(RM) makefile.conf 2>/dev/null || true
+
+.PHONY: dumpvars
+dumpvars:
+	@$(foreach V,$(sort $(.VARIABLES)), $(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))

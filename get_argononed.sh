@@ -22,13 +22,7 @@ fi
 command -v git &> /dev/null && GIT=1 || GIT=0
 if [ $GIT -eq 0 ]
 then 
-    DISTRO=$(awk -F"=" '$1=="ID"{print $2}' /etc/os-release)
-    case $DISTRO in
-        "raspbian" | "debian" | "ubuntu")
-            APT=1 ;;
-        *)
-            APT=0 ;;
-    esac
+    command -v apt &> /dev/null && APT=1 || APT=0
     [[ APT -eq 0 ]] && { echo "please install git and run again"; exit 1; }
     echo -e "\e[37;1mgit\e[0m isn't installed on your system."
     read -e -p "install package [y/N]?" choice

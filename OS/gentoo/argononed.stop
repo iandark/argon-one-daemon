@@ -1,2 +1,2 @@
 #!/bin/bash
-[[ $(runlevel | awk '{print $2}') -eq 0 ]] && /usr/bin/shutdown-argonone
+[[ $(runlevel | awk '{print $2}') -eq 0 ]] && /usr/sbin/shutdown-argonone

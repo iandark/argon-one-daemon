@@ -1,12 +1,12 @@
 SERVICE_FILE=OS/gentoo/argononed
 SERVICE_FILE_PERMISSIONS=744
-SERVICE_PATH=/etc/initd/argononed
+SERVICE_PATH=/etc/init.d/argononed
 SHUTDOWN_FILE=$(BINAME2)
-SHUTDOWN_PATH=/usr/bin/shutdown_argonone
-SERVICE_ENABLE=rc-updateadd
-SERVICE_DISABLE=rc-updatedel
-SERVICE_START=/etc/init.d/argononedstart
-SERVICE_STOP=/etc/init.d/argononedstop
+SHUTDOWN_PATH=/usr/sbin/shutdown_argonone
+SERVICE_ENABLE=rc-update add
+SERVICE_DISABLE=rc-update del
+SERVICE_START=/etc/init.d/argononed start
+SERVICE_STOP=/etc/init.d/argononed stop
 
 install:: install-service
 	@echo -n "shutdown service ... "

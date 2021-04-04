@@ -64,7 +64,7 @@ char* STATUS_STR[11] = {"Waiting for request",
     "Unknown"
     };
 
-const char *argp_program_version = "argonone-cli version 0.2.0";
+const char *argp_program_version = "argonone-cli version 0.3.1";
 const char *argp_program_bug_address =
 	"<gitlab.com/darkelvenangel/argononed.git>";
 
@@ -447,9 +447,17 @@ int main (int argc, char** argv)
         }
         if (arguments.mode > -1 && arguments.mode < 4)
         {
+            if (arguments.mode == 3)
+            {
+              if (ptr->temperature <= arguments.targettemp)
+              {
+                  if (!arguments.silent) fprintf(stderr, "ERROR:  CPU is already below target temperature\n");
+                  return 1;
+              }
+              if (arguments.fanoverride == 0) arguments.fanoverride = 10;
+            } 
             ptr->fanmode = arguments.mode;
             ptr->temperature_target = arguments.targettemp;
-            if (arguments.mode == 3 && arguments.fanoverride == 0) arguments.fanoverride = 10;
             ptr->fanspeed_Overide = arguments.fanoverride;
             // kill(d_pid, 1); // Send update message
             if (Send_Request(ptr, d_pid) != 0) main_ret = 1;

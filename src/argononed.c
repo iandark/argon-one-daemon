@@ -491,7 +491,7 @@ int32_t monitor_device(uint32_t *Pulse_Time_ms)
 		ret = errno;
 		goto exit_close_error;
 	}
-    if (E_Flag == 0)
+    if (E_Flag != 0 && ret == 0)
     {
         log_message(LOG_INFO, "GPIO Line Event Cleared ");
         E_Flag = 0;
@@ -502,13 +502,20 @@ int32_t monitor_device(uint32_t *Pulse_Time_ms)
 		struct gpioevent_data event;
 		ret = read(req.fd, &event, sizeof(event));
 		if (ret == -1) {
-			if (errno == -EAGAIN) {
-				continue;  // No Data Retry
-			} else {
-                log_message(LOG_ERROR, "Unable to read GPIO event : %s", strerror(errno));
-				ret = errno;
-				break;
-			}
+            if (E_Flag == 0)
+            {
+                if (errno == EAGAIN) {
+                    continue;  // No Data Retry
+                }
+                if (errno == EBUSY) { // BLOCK ERROR "Device or resource busy" It seems to be a false alarm
+                    usleep(10000);
+                    continue;
+                } else {
+                    log_message(LOG_ERROR, "Unable to read GPIO event : %s", strerror(errno));
+                    ret = errno;
+                    break;
+                }
+            }
 		}
 		if (ret != sizeof(event)) {
             log_message(LOG_ERROR, "GPIO Event malformed Reply");
@@ -723,7 +730,7 @@ int main(int argc,char **argv)
         {
             log_message(LOG_DEBUG, "Pulse received %dms", count);
             if ((count >= 19 && count <= 21) || (count >= 39 && count <= 41)) break;
-            else log_message(LOG_ERROR, "Unrecognized pulse width received [%dms]", count);
+            // else log_message(LOG_ERROR, "Unrecognized pulse width received [%dms]", count); This ERROR only floods the logs and isn't helpful
         }
         // monitor_device has produced and error
         usleep(10000);  // Shouldn't be reached but prevent overloading CPU

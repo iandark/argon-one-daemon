@@ -515,6 +515,7 @@ int32_t monitor_device(uint32_t *Pulse_Time_ms)
                     ret = errno;
                     break;
                 }
+                E_Flag = errno;
             }
 		}
 		if (ret != sizeof(event)) {

@@ -29,7 +29,7 @@ SOFTWARE.
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
-#include <linux/gpio.h>
+// #include <linux/gpio.h>
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
@@ -48,7 +48,7 @@ SOFTWARE.
 #include "identapi.h"
 #include "argononed.h"
 
-#define VERSION "0.3.1"
+#define VERSION "0.3.2"
 #ifndef LOG_LEVEL
 #define LOG_LEVEL 5
 #endif
@@ -456,7 +456,7 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
         log_message(LOG_INFO, "Successfully closed temperature sensor");
     }
 }
-
+#if 0 
 /**
  * This Function is used to watch for the power button events.
  * 
@@ -544,7 +544,7 @@ exit_close_error:
 	close(fd);
 	return ret;
 }
-
+#endif
 /**
  * Fork into a daemon
  * \note only call once
@@ -596,7 +596,7 @@ void daemonize(){
     signal(SIGHUP,signal_handler);
     signal(SIGTERM,signal_handler);
 }
-
+#if 0
 /**
  * Set GPIO pin mode
  * 
@@ -653,7 +653,7 @@ int gpioInitialize(void)
    }
    return 0;
 }
-
+#endif
 int main(int argc,char **argv)
 {
     argc = argc;    // surpress unused variable warning
@@ -683,13 +683,14 @@ int main(int argc,char **argv)
     log_message(LOG_INFO,"Startup ArgonOne Daemon ver %s", VERSION);
     log_message(LOG_INFO,"Loading Configuration");
     Read_config();
+#if 0
     if (gpioInitialize() < 0)
     {
         log_message(LOG_FATAL,"GPIO initialization failed");
         return 1;
     }
     log_message(LOG_INFO,"GPIO initialized");
-
+#endif
     struct identapi_struct Pirev;
     Pirev.RAW = IDENTAPI_GET_Revision();
     if (Pirev.RAW == 1)
@@ -721,6 +722,7 @@ int main(int argc,char **argv)
     memcpy(ptr->config.fanstages, &fanstage, sizeof(fanstage));
     memcpy(ptr->config.thresholds, &threshold, sizeof(threshold));
     ptr->config.hysteresis = hysteresis;
+#if 0
     gpioSetMode(4, PI_INPUT);
     gpioSetPullUpDown(4, PI_PUD_DOWN);
     log_message(LOG_INFO,"Now waiting for button press");
@@ -749,6 +751,13 @@ int main(int argc,char **argv)
         sync();
         system("/sbin/poweroff");
     }
+#else
+    do
+    {
+        sleep(1); // Main loop to sleep 
+    } while (1);
+    cleanup();
+#endif
     log_message(LOG_INFO,"Daemon Exiting");
     return 0;
 }

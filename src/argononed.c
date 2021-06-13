@@ -164,7 +164,7 @@ void Read_config()
     fp = fopen("/proc/device-tree/argonone/argonone-cfg","rb");
     if (fp == NULL)
     {
-        log_message(LOG_ERROR,"Unable to open device-tree data");
+        log_message(LOG_WARN,"Unable to open device-tree data");
     } else {
         ret = fread(&datain,sizeof(struct DTBO_Config),1,fp);
         if (ret <= 0)
@@ -369,92 +369,59 @@ void TMR_SHM_Interface(size_t timer_id __attribute__((unused)), void *user_data 
  */
 void TMR_Get_temp(size_t timer_id, void *user_data)
 {
-    static int32_t fdtemp = 0;
+
+    FILE* fdtemp = 0;
     int32_t CPU_Temp = 0;
 	static uint8_t fanspeed = 0;
-    uint32_t property[10] =
+    fdtemp = fopen("/sys/class/hwmon/hwmon1/temp1_input", "r");
+    fscanf(fdtemp, "%d", &CPU_Temp);
+    fclose(fdtemp);
+    CPU_Temp = CPU_Temp / 1000;
+    
+    switch (runstate)
     {
-        0x00000000,
-        0x00000000,
-        0x00030006,
-        0x00000008,
-        0x00000004,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000,
-        0x00000000
-    };
-    property[0] = 10 * sizeof(property[0]);
-    if (user_data == NULL)
-    {
-        if (fdtemp == 0)
+        case 0: //AUTO
+        switch (fanspeed)
         {
-            fdtemp = open("/dev/vcio", 0);
-            if (fdtemp == -1)
-            {
-                log_message(LOG_CRITICAL, "Cannot get VideoCore I/O!");
-                stop_timer(timer_id);
-                log_message(LOG_CRITICAL, "Temperature can not be monitored!!");
-            } else {
-                log_message(LOG_INFO, "Successfully opened /dev/vcio for temperature sensor");
-            }
-        }
-        if (ioctl(fdtemp, _IOWR(100, 0, char *), property) == -1)
-        {
-            log_message(LOG_CRITICAL, "Cannot get CPU Temp!");
-            stop_timer(timer_id);
-            log_message(LOG_CRITICAL, "Temperature can not be monitored!!");
-        }
-        CPU_Temp = property[6] / 1000;
-        switch (runstate)
-        {
-            case 0: //AUTO
-            switch (fanspeed)
-            {
-                case 0:
-                if (CPU_Temp >= threshold[0]) fanspeed = 1;
-                Set_FanSpeed(0);
-                break;
-                case 1:
-                if (CPU_Temp >= threshold[1]) fanspeed = 2;
-                if (CPU_Temp <= threshold[0] - hysteresis) fanspeed = 0;
-                Set_FanSpeed(fanstage[0]);
-                break;
-                case 2:
-                if (CPU_Temp >= threshold[2]) fanspeed = 3;
-                if (CPU_Temp <= threshold[1] - hysteresis) fanspeed = 1;
-                Set_FanSpeed(fanstage[1]);
-                break;
-                case 3:
-                if (CPU_Temp <= threshold[2] - hysteresis) fanspeed = 2;
-                Set_FanSpeed(fanstage[2]);
-                break;
-            }
+            case 0:
+            if (CPU_Temp >= threshold[0]) fanspeed = 1;
+            Set_FanSpeed(0);
             break;
-            case 1: Set_FanSpeed(0); break; // OFF
-            case 2: // MANUAL OVERRIDE
+            case 1:
+            if (CPU_Temp >= threshold[1]) fanspeed = 2;
+            if (CPU_Temp <= threshold[0] - hysteresis) fanspeed = 0;
+            Set_FanSpeed(fanstage[0]);
+            break;
+            case 2:
+            if (CPU_Temp >= threshold[2]) fanspeed = 3;
+            if (CPU_Temp <= threshold[1] - hysteresis) fanspeed = 1;
+            Set_FanSpeed(fanstage[1]);
+            break;
+            case 3:
+            if (CPU_Temp <= threshold[2] - hysteresis) fanspeed = 2;
+            Set_FanSpeed(fanstage[2]);
+            break;
+        }
+        break;
+        case 1: Set_FanSpeed(0); break; // OFF
+        case 2: // MANUAL OVERRIDE
+        Set_FanSpeed(fanstage[3]);
+        break;
+        case 3: // COOLDOWN
+        if (CPU_Temp <= threshold[3])
+        {
+            log_message(LOG_INFO, "Cool down complete. switch to AUTO mode"); 
+            Set_FanSpeed(0);
+            runstate = 0;
+            ptr->fanmode = 0;
+        } else {
             Set_FanSpeed(fanstage[3]);
-            break;
-            case 3: // COOLDOWN
-            if (CPU_Temp <= threshold[3])
-            {
-                log_message(LOG_INFO, "Cool down complete. switch to AUTO mode"); 
-                Set_FanSpeed(0);
-                runstate = 0;
-                ptr->fanmode = 0;
-            } else {
-                Set_FanSpeed(fanstage[3]);
-            }
-            break;
         }
-        ptr->temperature = CPU_Temp;
-        if (CPU_Temp > ptr->stat.max_temperature) ptr->stat.max_temperature = CPU_Temp;
-        if ( (ptr->stat.min_temperature == 0) || (CPU_Temp < ptr->stat.min_temperature)) ptr->stat.min_temperature = CPU_Temp;
-    } else {
-        close(fdtemp);
-        log_message(LOG_INFO, "Successfully closed temperature sensor");
+        break;
     }
+    ptr->temperature = CPU_Temp;
+    if (CPU_Temp > ptr->stat.max_temperature) ptr->stat.max_temperature = CPU_Temp;
+    if ( (ptr->stat.min_temperature == 0) || (CPU_Temp < ptr->stat.min_temperature)) ptr->stat.min_temperature = CPU_Temp;
 }
 #if 0 
 /**
@@ -695,8 +662,8 @@ int main(int argc,char **argv)
     Pirev.RAW = IDENTAPI_GET_Revision();
     if (Pirev.RAW == 1)
     {
-        log_message(LOG_FATAL,"Unable to read valid revision code");
-        return 1;
+        log_message(LOG_INFO,"Unable to read valid revision code");  // Since GPIO isn't in use this isn't a fatal and only needed for logging
+        //return 1;
     } else {
 
         float frev = 1.0 + (Pirev.REVISION / 10.0);

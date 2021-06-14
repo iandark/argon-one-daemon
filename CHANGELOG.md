@@ -1,5 +1,10 @@
 # Change Log
 
+0.3.2
+
+* Added Power button disable
+* Added Sysfs temp monitor support
+
 0.3.1
 
 * Build system improved

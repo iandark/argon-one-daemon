@@ -95,10 +95,20 @@ echo "INITSYS=${INITSYS}" >> makefile.conf
 echo "I2CHELPER=${I2CHELPER}" >> makefile.conf
 if [[ $PACKAGESYS == 1 ]]
 then
-    echo PACKAGESYS=ENABLED >> makefile.conf
+    echo "PACKAGESYS=ENABLED" >> makefile.conf
 else
     echo "AUTOCOMP=${AUTOC}" >> makefile.conf
     echo "I2CBUS=${I2CBUS}" >> makefile.conf
     echo "LOGROTATE=${LOGROTATE}" >> makefile.conf
+fi
+if [[ -n $DISABLE_POWERBUTTON ]]
+then
+    echo -e "Power Button is \e[1mDISABLED\e[0m"
+    echo "DISABLE_POWER_BUTTON_SUPPORT=1" >> makefile.conf
+fi
+if [[ -n $USE_SYSFS_TEMP ]]
+then
+    echo -e "Daemon will use \e[1m${USE_SYSFS_TEMP}\e[0m for temperature sensor"
+    echo "USE_SYSFS_TEMP=${USE_SYSFS_TEMP}" >> makefile.conf
 fi
 exit 0

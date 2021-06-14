@@ -33,7 +33,12 @@ endif
 ifndef LOGROTATE
 LOGROTATE = 0
 endif
-
+ifdef DISABLE_POWER_BUTTON_SUPPORT
+CFLAGS += -DDISABLE_POWER_BUTTON_SUPPORT
+endif
+ifdef USE_SYSFS_TEMP
+CFLAGS += -DUSE_SYSFS_TEMP=$(USE_SYSFS_TEMP)
+endif
 ifeq ($(GCCVER), 1)
 	CFLAGs  += -fanalyzer
 endif

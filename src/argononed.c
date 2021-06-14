@@ -769,10 +769,10 @@ int main(int argc,char **argv)
     }
 #else
     log_message(LOG_INFO,"Daemon Ready");
-    do
+    for(;;)
     {
         sleep(1); // Main loop to sleep 
-    } while (1);
+    }
     cleanup();
 #endif
     log_message(LOG_INFO,"Daemon Exiting");

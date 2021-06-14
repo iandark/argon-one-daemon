@@ -9,6 +9,7 @@ INSTALL = install
 CFLAGS  = -Wall -s -O3
 LFLAGS  = -lpthread -lrt
 OBJ     = build/argononed.o build/event_timer.o
+OBJ3    = src/argonone-cli.c
 BINAME1 = argononed
 BINAME2 = argonone-shutdown
 BINAME3 = argonone-cli
@@ -80,7 +81,7 @@ $(BINAME2): src/argonone-shutdown.c
 	@echo "Build $(BINAME2)"
 	$(CC) -o build/$(BINAME2) $^ $(CFLAGS)
 
-$(BINAME3): src/argonone-cli.c
+$(BINAME3): $(OBJ3) 
 	@echo "Build $(BINAME3)"
 	$(CC) -o build/$(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) -lrt
 

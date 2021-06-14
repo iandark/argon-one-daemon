@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
+#define DISABLE_POWER_BUTTON_SUPPORT 
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -54,6 +54,8 @@ SOFTWARE.
 #ifndef LOG_LEVEL
 #define LOG_LEVEL 5
 #endif
+
+#define USE_SYSFS_TEMP /sys/class/hwmon/hwmon0/temp1_input
 
 char* PI_PUD_STR[3] = {"OFF", "DOWN", "UP"};
 char* PI_MODE_STR[8] = { "INPUT", "OUTPUT", "ALT5", "ALT4", "ALT0", "ALT1", "ALT2", "ALT3" };
@@ -373,13 +375,17 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
 {
     int32_t CPU_Temp = 0;
 	static uint8_t fanspeed = 0;
+    log_message(LOG_INFO, "Getting CPU_Temp");
 #ifdef USE_SYSFS_TEMP
-#define DTOSTRING(s) #s
+#define DTOSTRING(s) xstr(s)
+#define xstr(s) #s
     FILE* fptemp = 0;
     fptemp = fopen(DTOSTRING(USE_SYSFS_TEMP), "r");
     fscanf(fptemp, "%d", &CPU_Temp);
     fclose(fptemp);
     CPU_Temp = CPU_Temp / 1000;
+    log_message(LOG_INFO, "CPU %d`", CPU_Temp);
+#undef xstr 
 #undef DTOSTRING
 #else 
     static int32_t fdtemp = 0;

@@ -21,7 +21,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-#define DISABLE_POWER_BUTTON_SUPPORT 
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -55,7 +54,6 @@ SOFTWARE.
 #define LOG_LEVEL 5
 #endif
 
-#define USE_SYSFS_TEMP /sys/class/hwmon/hwmon0/temp1_input
 
 char* PI_PUD_STR[3] = {"OFF", "DOWN", "UP"};
 char* PI_MODE_STR[8] = { "INPUT", "OUTPUT", "ALT5", "ALT4", "ALT0", "ALT1", "ALT2", "ALT3" };

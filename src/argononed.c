@@ -371,15 +371,52 @@ void TMR_SHM_Interface(size_t timer_id __attribute__((unused)), void *user_data 
  */
 void TMR_Get_temp(size_t timer_id, void *user_data)
 {
-
-    FILE* fdtemp = 0;
     int32_t CPU_Temp = 0;
 	static uint8_t fanspeed = 0;
-    fdtemp = fopen("/sys/class/hwmon/hwmon1/temp1_input", "r");
-    fscanf(fdtemp, "%d", &CPU_Temp);
-    fclose(fdtemp);
+#ifdef USE_SYSFS_TEMP
+    FILE* fptemp = 0;
+    fptemp = fopen(USE_SYSFS_TEMP, "r");
+    fscanf(fptemp, "%d", &CPU_Temp);
+    fclose(fptemp);
     CPU_Temp = CPU_Temp / 1000;
-    
+#else 
+    static int32_t fdtemp = 0;
+    uint32_t property[10] =
+    {
+        0x00000000,
+        0x00000000,
+        0x00030006,
+        0x00000008,
+        0x00000004,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000
+    };
+    property[0] = 10 * sizeof(property[0]);
+    if (user_data == NULL)
+    {
+        if (fdtemp == 0)
+        {
+            fdtemp = open("/dev/vcio", 0);
+            if (fdtemp == -1)
+            {
+                log_message(LOG_CRITICAL, "Cannot get VideoCore I/O!");
+                stop_timer(timer_id);
+                log_message(LOG_CRITICAL, "Temperature can not be monitored!!");
+            } else {
+                log_message(LOG_INFO, "Successfully opened /dev/vcio for temperature sensor");
+            }
+        }
+        if (ioctl(fdtemp, _IOWR(100, 0, char *), property) == -1)
+        {
+            log_message(LOG_CRITICAL, "Cannot get CPU Temp!");
+            stop_timer(timer_id);
+            log_message(LOG_CRITICAL, "Temperature can not be monitored!!");
+        }
+        CPU_Temp = property[6] / 1000;
+#endif
     switch (runstate)
     {
         case 0: //AUTO
@@ -424,6 +461,12 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
     ptr->temperature = CPU_Temp;
     if (CPU_Temp > ptr->stat.max_temperature) ptr->stat.max_temperature = CPU_Temp;
     if ( (ptr->stat.min_temperature == 0) || (CPU_Temp < ptr->stat.min_temperature)) ptr->stat.min_temperature = CPU_Temp;
+#ifndef USE_SYSFS_TEMP
+    } else {
+        close(fdtemp);
+        log_message(LOG_INFO, "Successfully closed temperature sensor");
+    }
+#endif
 }
 #ifndef DISABLE_POWER_BUTTON_SUPPORT 
 /**

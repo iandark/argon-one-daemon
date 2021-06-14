@@ -373,7 +373,6 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
 {
     int32_t CPU_Temp = 0;
 	static uint8_t fanspeed = 0;
-    log_message(LOG_INFO, "Getting CPU_Temp");
 #ifdef USE_SYSFS_TEMP
 #define DTOSTRING(s) xstr(s)
 #define xstr(s) #s
@@ -382,7 +381,6 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
     fscanf(fptemp, "%d", &CPU_Temp);
     fclose(fptemp);
     CPU_Temp = CPU_Temp / 1000;
-    log_message(LOG_INFO, "CPU %d`", CPU_Temp);
 #undef xstr 
 #undef DTOSTRING
 #else 

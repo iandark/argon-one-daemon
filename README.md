@@ -43,6 +43,14 @@ The default build will generate a very detailed logs if you want less logging th
 ```make LOGLEVEL=[0-6]```  
 The log levels go in this order: FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG. A value of 0 disables logging.
 
+## Advanced Build Options
+
+ Advanced Build options are used with `configure` or `package.sh`
+
+ **USE_SYSFS_TEMP** If your system doesn't have `/dev/vcio` you'll need to use the sysfs temperature sensor set. Set the path for your OS not all systems store this in the same place. example  `USE_SYSFS_TEMP=/sys/class/hwmon/hwmon1/temp1_input`
+
+ **DISABLE_POWERBUTTON** if you don't have `/dev/gpiomem` and/or `/dev/gpiochip0` or you don't want to use the power button then use this flag.  Remember that the Force shutdown >= 5 second long press will still work.
+
 ## Upgrading to the latest version
 
 In order to upgrade to the latest version the current method is to pull the updates from gitlab and execute the following command

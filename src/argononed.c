@@ -374,11 +374,13 @@ void TMR_Get_temp(size_t timer_id, void *user_data)
     int32_t CPU_Temp = 0;
 	static uint8_t fanspeed = 0;
 #ifdef USE_SYSFS_TEMP
+#define DTOSTRING(s) #s
     FILE* fptemp = 0;
-    fptemp = fopen(USE_SYSFS_TEMP, "r");
+    fptemp = fopen(DTOSTRING(USE_SYSFS_TEMP), "r");
     fscanf(fptemp, "%d", &CPU_Temp);
     fclose(fptemp);
     CPU_Temp = CPU_Temp / 1000;
+#undef DTOSTRING
 #else 
     static int32_t fdtemp = 0;
     uint32_t property[10] =

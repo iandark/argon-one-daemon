@@ -4,6 +4,7 @@
 
 * Added Power button disable
 * Added Sysfs temp monitor support
+* Fix silent and quiet not being respected in cli
 
 0.3.1
 

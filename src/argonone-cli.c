@@ -397,6 +397,21 @@ int main (int argc, char** argv)
     #if LOG_LEVEL == 6
     arguments.debug = 1;
     #endif
+    struct SHM_Data* ptr;
+    int shm_fd =  shm_open(SHM_FILE, O_RDWR, 0664);
+    if (shm_fd == -1)
+    {
+      fprintf(stderr, "ERROR:  argononed is not running, or has no shared memory access.\n");
+      exit(1);
+    }
+    ftruncate(shm_fd, SHM_SIZE);
+    ptr = mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (ptr == MAP_FAILED) {
+        fprintf(stderr, "ERROR:  Shared memory map error\n");
+        exit(1);
+    }
+    arguments.Schedule = &ptr->config;
+    argp_parse (&argp, argc, argv, 0, 0, &arguments);
     FILE* file = fopen (LOCK_FILE, "r");
     int main_ret = 0;
     int d_pid = 0;
@@ -423,16 +438,6 @@ int main (int argc, char** argv)
           exit (1);
       }
     }
-    struct SHM_Data* ptr;
-    int shm_fd =  shm_open(SHM_FILE, O_RDWR, 0664);
-    ftruncate(shm_fd, SHM_SIZE);
-    ptr = mmap(0, SHM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-    if (ptr == MAP_FAILED) {
-        if (!arguments.silent) fprintf(stderr, "ERROR:  Shared memory map error\n");
-        exit(1);
-    }
-    arguments.Schedule = &ptr->config;
-    argp_parse (&argp, argc, argv, 0, 0, &arguments);
 
     // if (arguments.debug) fprintf(stderr,">> ARGUMENT PARSE <<\nMODE\t%d\nTEMP\t%d\nFANS\t%d\n", arguments.mode, arguments.targettemp, arguments.fanoverride);
 

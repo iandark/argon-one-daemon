@@ -32,6 +32,7 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * Ubuntu
 * Lakka *\**
 * LibreElec *\**
+* [OpenWRT](OS/openwrt/README.md) **EXPERIMENTAL** *\**
 
 If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system.
 

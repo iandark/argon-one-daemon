@@ -8,6 +8,7 @@ BASH	= bash
 INSTALL = install
 CFLAGS  = -Wall -s -O3
 LFLAGS  = -lpthread -lrt
+LFLAGS3 = -lrt
 OBJ     = build/argononed.o build/event_timer.o
 OBJ3    = src/argonone-cli.c
 BINAME1 = argononed
@@ -88,7 +89,7 @@ $(BINAME2): src/argonone-shutdown.c
 
 $(BINAME3): $(OBJ3) 
 	@echo "Build $(BINAME3)"
-	$(CC) -o build/$(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) -lrt
+	$(CC) -o build/$(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) $(LFLAGS)
 
 $(OVERLAY): src/argonone.dts
 	@echo "Build $@"
@@ -107,7 +108,7 @@ cli: $(BINAME3)
 	@echo "MAKE: CLI"
 
 .PHONY: all
-all: daemon cli overlay
+all:: daemon cli overlay
 	@echo "MAKE: Complete"
 
 .PHONY: install-daemon
@@ -168,7 +169,7 @@ endif
 	@echo "Update Complete"
 
 .PHONY: uninstall
-uninstall:
+uninstall::
 	@echo -n "Stop Service ... "
 	@$(SERVICE_STOP) &>/dev/null && echo "Successful" || { echo "Failed"; }
 	@echo -n "Disable Service ... "
@@ -200,7 +201,7 @@ endif
 	@echo "Uninstall Complete"
 
 .PHONY: clean
-clean:
+clean::
 	-@$(RM) *.o 2>/dev/null || true
 	-@$(RM) argonone.dtbo 2>/dev/null || true
 	-@$(RM) $(BINAME1) 2>/dev/null || true

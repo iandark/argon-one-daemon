@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+
+START=12
+STOP=89
+
+USE_PROCD=1
+
+PROG=/usr/sbin/argononed
+NAME=argononed
+
+start_service()
+{
+	procd_open_instance
+	procd_set_param command "$PROG" 
+	procd_set_param respawn
+	procd_close_instance
+}
+
+
+shutdown()
+{
+	stop
+	[[ $(runlevel | awk '{print $2}') -eq 0 ]] && /usr/sbin/shutdown-argonone
+}

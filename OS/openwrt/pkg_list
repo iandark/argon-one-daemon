@@ -1,0 +1,8 @@
+OS/openwrt/pkg_list
+build/argononed
+build/argonone-cli
+build/argonone-shutdown
+build/argonone.dtbo
+build/checksum
+OS/openwrt/argononed
+OS/_common/setup-overlay.sh

@@ -1,0 +1,20 @@
+SERVICE_FILE=OS/openwrt/argononed
+SERVICE_FILE_PERMISSIONS=744
+SERVICE_PATH=/etc/init.d/argononed
+SHUTDOWN_FILE=$(BINAME2)
+SHUTDOWN_PATH=/usr/sbin/shutdown_argonone
+SERVICE_ENABLE=/etc/init.d/argononed enable
+SERVICE_DISABLE=/etc/init.d/argononed disable
+SERVICE_START=/etc/init.d/argononed start
+SERVICE_STOP=/etc/init.d/argononed stop
+LFLAGS3 = /usr/lib/libargp.a
+
+
+all:: $(BINAME1) $(BINAME2) $(BINAME3) $(OVERLAY)
+	md5sum  build/$(BINAME1) >> build/checksum
+	md5sum  build/$(BINAME2) >> build/checksum
+	md5sum  build/$(BINAME3) >> build/checksum
+	md5sum  build/$(OVERLAY) >> build/checksum
+
+clean::
+	-@$(RM) build/checksum 2>/dev/null || true

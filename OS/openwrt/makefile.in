@@ -9,7 +9,6 @@ SERVICE_START=/etc/init.d/argononed start
 SERVICE_STOP=/etc/init.d/argononed stop
 LFLAGS3 = /usr/lib/libargp.a
 LFLAGS =
-CFLAGS += -DUSE_LOCKFILE=/tmp/run
 
 
 all:: $(BINAME1) $(BINAME2) $(BINAME3) $(OVERLAY)

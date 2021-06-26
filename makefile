@@ -89,7 +89,7 @@ $(BINAME2): src/argonone-shutdown.c
 
 $(BINAME3): $(OBJ3) 
 	@echo "Build $(BINAME3)"
-	$(CC) -o build/$(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) $(LFLAGS)
+	$(CC) -o build/$(BINAME3) $^ $(CFLAGS) -DLOG_LEVEL=$(LOGLEVEL) $(LFLAGS3)
 
 $(OVERLAY): src/argonone.dts
 	@echo "Build $@"

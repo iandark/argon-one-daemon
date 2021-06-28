@@ -3,12 +3,9 @@
 ## Install steps
 
 ```text
-cd /
 opkg install gcc make git git-http apk alpine-repositories dtc bash kmod-i2c-core kmod-i2c-bcm2835 kmod-i2c-algo-bit kmod-i2c-gpio
 apk --allow-untrusted update
 apk --allow-untrusted add argp-standalone
-ln -s /tmp/run run
-cd root
 git clone https://gitlab.com/DarkElvenAngel/argononed.git
 cd argononed
 git checkout 0.3.x

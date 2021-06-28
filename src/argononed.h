@@ -27,7 +27,9 @@ SOFTWARE.
 
 #define RUNNING_DIR "/tmp"
 #define LOG_FILE "/var/log/argononed.log"
+#ifndef LOCK_FILE
 #define LOCK_FILE "/run/argononed.pid"
+#endif
 #define SHM_FILE "argonone"
 #define SHM_SIZE 512
 

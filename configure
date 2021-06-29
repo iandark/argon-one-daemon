@@ -28,7 +28,7 @@ if [[ -n $TARGET_DISTRO ]]
 then
     DISTRO=$TARGET_DISTRO
 else
-    DISTRO=$(awk -F"=" '$1=="ID"{print $2}' /etc/os-release)
+    DISTRO=$(awk -F"=" '$1=="ID"{print $2}' /etc/os-release | sed 's/\"//g')
 fi
 STATUS=UNKNOWN
 I2CHELPER=0

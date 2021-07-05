@@ -1,5 +1,9 @@
 # Change Log
 
+0.3.3
+
+* Added Experimental support for Alpine Linux
+
 0.3.2
 
 * Added Power button disable

@@ -7,6 +7,7 @@
 * Fix silent and quiet not being respected in cli
 * Adjust build system to support more distributions
 * Added Experimental support for OpenWRT
+* Issue #12: Added example config.txt to README.md
 
 0.3.1
 

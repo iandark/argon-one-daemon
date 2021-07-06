@@ -16,6 +16,15 @@ Configuration is all done in the **/boot/config.txt** look for this line ```dtov
 
 The default values are the same as the OEM at 55℃ the fan will start at 10%, at 60℃ the speed will increase to 55% and finally after 65℃ the fan will spin at 100%.  The default hysteresis is 3℃
 
+### Example config.txt
+
+In this example the hysteresis will be set to 5 and the fan will start at 50℃
+
+```text
+dtoverlay=argonone,hysteresis=5
+dtparam=fantemp0=50
+```
+
 ## Why make this?
 
 Simply put I didn't like the OEM software.  It works sure but it uses Python and needs to install a bunch of dependencies.  This makes it's foot print on your system much bigger than it needs to be.  My daemon runs with minimal requirements, all of them are included in this Repo.

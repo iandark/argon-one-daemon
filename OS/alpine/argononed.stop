@@ -1,2 +1,2 @@
 #!/bin/bash
-[[ $(runlevel | awk '{print $2}') -eq 0 ]] && /usr/sbin/shutdown-argonone
+/usr/sbin/shutdown-argonone $(rc-status -r)

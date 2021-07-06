@@ -12,4 +12,8 @@ then
 else
     echo "dtparam=i2c_arm=on" >> $FILE && echo "DONE";
 fi
+echo -n "Search /etc/modules for i2c-dev ... "
+grep -i '^i2c-dev' /etc/modules 1> /dev/null && { echo "FOUND"; exit 0; } || echo "NOT FOUND"
+echo -n "Insert i2c-dev into /etc/modules "
+echo "i2c-dev" >> /etc/modules && echo "DONE";
 exit 0

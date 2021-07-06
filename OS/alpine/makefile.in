@@ -1,7 +1,7 @@
 SERVICE_FILE=OS/alpine/argononed.start
 SERVICE_FILE_PERMISSIONS=744
 SERVICE_PATH=/etc/init.d/argononed
-SHUTDOWN_FILE=$(BINAME2)
+SHUTDOWN_FILE=/src/$(BINAME2)
 SHUTDOWN_PATH=/usr/sbin/shutdown_argonone
 SERVICE_ENABLE=rc-update add
 SERVICE_DISABLE=rc-update del
@@ -12,6 +12,7 @@ OBJ3 += /usr/lib/libargp.a
 install:: install-service
 	@echo -n "shutdown service ... "
 	@$(INSTALL) -m 744 OS/alpine/argononed.stop /etc/local.d/argononed.stop 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+	@rc-update add local
 
 install:: install-overlay
 	@$(BASH) OS/alpine/i2cenable.sh $(BOOTLOC)/config.txt

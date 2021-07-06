@@ -1,7 +1,7 @@
 SERVICE_FILE=OS/alpine/argononed.start
 SERVICE_FILE_PERMISSIONS=744
 SERVICE_PATH=/etc/init.d/argononed
-SHUTDOWN_FILE=src/$(BINAME2)
+SHUTDOWN_FILE=build/$(BINAME2)
 SHUTDOWN_PATH=/usr/sbin/shutdown_argonone
 SERVICE_ENABLE=rc-update add
 SERVICE_DISABLE=rc-update del

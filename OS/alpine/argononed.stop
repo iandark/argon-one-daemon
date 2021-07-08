@@ -1,2 +1,2 @@
 #!/bin/bash
-/usr/sbin/shutdown-argonone $(rc-status -r)
+[[ -f /tmp/reboot ]] || /usr/sbin/shutdown-argonone

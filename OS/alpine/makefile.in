@@ -9,10 +9,10 @@ SERVICE_START=/etc/init.d/argononed start
 SERVICE_STOP=/etc/init.d/argononed stop
 OBJ3 += /usr/lib/libargp.a
 
-install:: install-service
-	@echo -n "shutdown service ... "
-	@$(INSTALL) -m 744 OS/alpine/argononed.stop /etc/local.d/argononed.stop 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
-	@rc-update add local
+#install:: install-service
+#	@echo -n "shutdown service ... "
+#	@$(INSTALL) -m 744 OS/alpine/argononed.stop /etc/local.d/argononed.stop 2>/dev/null && echo "Successful" || { echo "Failed"; true; }
+#	@rc-update add local
 
 install:: install-overlay
 	@$(BASH) OS/alpine/i2cenable.sh $(BOOTLOC)/config.txt

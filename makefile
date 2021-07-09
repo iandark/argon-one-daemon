@@ -41,6 +41,9 @@ endif
 ifdef USE_SYSFS_TEMP
 CFLAGS += -DUSE_SYSFS_TEMP=$(USE_SYSFS_TEMP)
 endif
+ifdef RUN_IN_FOREGROUND
+CFLAGS += -DRUN_IN_FOREGROUND
+endif
 ifeq ($(GCCVER), 1)
 	CFLAGs  += -fanalyzer
 endif

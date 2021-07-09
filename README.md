@@ -62,6 +62,8 @@ The log levels go in this order: FATAL, CRITICAL, ERROR, WARNING, INFO, DEBUG. A
 
  **DISABLE_POWERBUTTON** if you don't have `/dev/gpiomem` and/or `/dev/gpiochip0` or you don't want to use the power button then use this flag.  Remember that the Force shutdown >= 5 second long press will still work.
 
+ **RUN_IN_FOREGROUND** if you need the daemon to always run in the foreground this flag will skip the forking to the background and cause the daemon to log to the console.
+
 ## Upgrading to the latest version
 
 In order to upgrade to the latest version the current method is to pull the updates from gitlab and execute the following command

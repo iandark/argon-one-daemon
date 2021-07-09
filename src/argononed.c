@@ -97,7 +97,11 @@ void log_message(Log_Level level, const char *message, ...)
         if (level == LOG_ERROR) ptr->stat.EF_Error++;
         if (level == LOG_CRITICAL) ptr->stat.EF_Critical ++;
     }
+#ifndef RUN_IN_FOREGROUND
     logfile = fopen(LOG_FILE,"a");
+#else
+    logfile = stdout;
+#endif
     if(!logfile) return;
     if (level <= LOG_LEVEL )
     {
@@ -111,7 +115,9 @@ void log_message(Log_Level level, const char *message, ...)
         va_end(args);
         fprintf(logfile,"\n");
     }
+#ifndef RUN_IN_FOREGROUND
     fclose(logfile);
+#endif
 }
 
 /**
@@ -568,12 +574,13 @@ exit_close_error:
  * \return none
  */
 void daemonize(){
-    int i,lfp;
+    int lfp;
     char str[10];
 //  This is causing problems with systemd seems to be okay without
 //    if(getppid() == 1)
 //        return;
-    i = fork();
+#ifndef RUN_IN_FOREGROUND
+    int i = fork();
     if(i < 0)
         exit(1);
     if(i > 0)
@@ -584,6 +591,7 @@ void daemonize(){
     i = open("/dev/null",O_RDWR);
     dup(i);
     dup(i);
+#endif
     umask(0);
     chdir(RUNNING_DIR);
     lfp = open(LOCK_FILE,O_RDWR|O_CREAT,0640);

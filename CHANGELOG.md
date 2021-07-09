@@ -3,6 +3,7 @@
 0.3.3
 
 * Added Experimental support for Alpine Linux
+* Added RUN_IN_FOREGROUND flag
 
 0.3.2
 

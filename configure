@@ -111,4 +111,9 @@ then
     echo -e "Daemon will use \e[1m${USE_SYSFS_TEMP}\e[0m for temperature sensor"
     echo "USE_SYSFS_TEMP=${USE_SYSFS_TEMP}" >> makefile.conf
 fi
+if [[ -n $RUN_IN_FOREGROUND ]]
+then
+    echo -e "Daemon will use run only in foreground and not fork"
+    echo "RUN_IN_FOREGROUND=1" >> makefile.conf
+fi
 exit 0

@@ -4,6 +4,7 @@
 
 * Added Experimental support for Alpine Linux
 * Added RUN_IN_FOREGROUND flag
+* @fridrich has added opensuse support
 
 0.3.2
 

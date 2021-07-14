@@ -43,6 +43,7 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * LibreElec *\**
 * [OpenWRT](OS/openwrt/README.md) **EXPERIMENTAL** *\**
 * [Alpine Linux](OS/alpine/README.md) **SEE LINK**
+* opensuse Thanks to @fridrich
 
 If your OS isn't on this list it means that the installer isn't setup for your OS and it *may* or *may not* be able to install on your system.
 

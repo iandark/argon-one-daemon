@@ -492,11 +492,21 @@ int32_t monitor_device(uint32_t *Pulse_Time_ms)
 	struct gpioevent_request req;
 	int fd;
 	int ret = 0;
+    if (E_Flag == -1) { // E_Flag -1 disable attempts to open /dev/gpiochip0 
+        while (1) {
+            usleep(10000);
+        }
+    }
     *Pulse_Time_ms = 0; // Initialize to zero
 	fd = open("/dev/gpiochip0", 0);
 	if (fd == -1) {
         log_message(LOG_CRITICAL, "Unable to open /dev/gpiochip0 : %s", strerror(errno));
 		ret = errno;
+        if (ret == ENOENT) // /dev/gpiochip0 doesn't exists
+        {
+            E_Flag = -1;
+            log_message(LOG_FATAL, "Powerbutton monitoring has failed!");
+        }
 		goto exit_close_error;
 	}
 	req.lineoffset = 4;

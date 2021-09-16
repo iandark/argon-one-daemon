@@ -1,0 +1,4 @@
+install:: install-overlay
+ifeq ($(I2CHELPER), 1)
+	@$(BASH) OS/debian/i2chelper.sh 2> /dev/null
+endif

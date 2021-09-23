@@ -1,6 +1,6 @@
 #!/bin/bash
 MODULES="i2c-dev"
-MODULE_FILE="/etc/modules.conf"
+MODULE_FILE="/etc/modules"
 
 if [[ -a $MODULE_FILE ]]; then
     for MODULE in $MODULES

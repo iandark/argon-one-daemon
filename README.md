@@ -4,6 +4,9 @@ A replacement daemon for the Argon One Raspberry Pi cases, and the Argon Artik F
 
 ## How To Install
 
+Firstly you need to have a build environment setup, that includes the following `gcc dtc git bash linux-headers make git`  
+*NOTE : The package names will be different depending on your OS so I've only given their binary names. Refer to your distribution for what you need to install.*  
+
 I've tried to make the installer as simple as possible. After cloning this repo simply run ```./install``` You may need to reboot for full functionality.
 
 ## Configuration

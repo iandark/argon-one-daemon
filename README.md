@@ -42,9 +42,10 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * Manjaro-arm
 * Arch Linux arm (ARMv7 installation ONLY)
 * Ubuntu
+* OSMC
+* TwisterOS
 * Lakka *\**
 * LibreElec *\**
-* OSMC **EXPERIMENTAL**
 * [OpenWRT](OS/openwrt/README.md) **EXPERIMENTAL** *\**
 * [Alpine Linux](OS/alpine/README.md) **SEE LINK**
 * opensuse Thanks to @fridrich

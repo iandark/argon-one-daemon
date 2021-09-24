@@ -41,6 +41,7 @@ The installer now requires you to run ```./configure``` before you run make. Thi
 * Ubuntu
 * Lakka *\**
 * LibreElec *\**
+* OSMC **EXPERIMENTAL**
 * [OpenWRT](OS/openwrt/README.md) **EXPERIMENTAL** *\**
 * [Alpine Linux](OS/alpine/README.md) **SEE LINK**
 * opensuse Thanks to @fridrich
